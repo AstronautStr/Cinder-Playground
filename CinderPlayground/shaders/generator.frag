@@ -1045,7 +1045,7 @@ vec4 goldenCircles()
     vec2 screen = vec2(screenWidth, screenHeight);
     vec2 center = screen / 2;
     
-    vec2 cameraMove = (externalValue * 5.0) * ((vec2(mouseX, mouseY) - center) / screen);//vec2(cos(M_2PI * time * 0.5), sin(M_2PI * time * 0.5));
+    vec2 cameraMove = (screenHeight / GOLD) * vec2(0.5 * sin(M_2PI * time * 0.015), 0.5 * sin(M_2PI * time * 0.05));//(externalValue * 5.0) * ((vec2(mouseX, mouseY) - center) / screen);//vec2(cos(M_2PI * time * 0.5), sin(M_2PI * time * 0.5));
     //center += cameraMove;
 
     float lenCenter = length(center);
