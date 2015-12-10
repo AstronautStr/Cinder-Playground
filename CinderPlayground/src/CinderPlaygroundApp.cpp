@@ -23,7 +23,7 @@ protected:
     audio::GainNodeRef mGainNode;
     
     gl::GlslProgRef mGlsl;
-    gl:: mPlane;
+    gl::BatchRef mPlane;
     
     double controlValue;
 };
@@ -54,7 +54,7 @@ void CinderPlaygroundApp::setup()
     std::string frag((char*)app::PlatformCocoa::get()->loadResource("generator.frag")->getBuffer()->getData());
     
     mGlsl = gl::GlslProg::create(gl::GlslProg::Format().vertex(vert).fragment(frag));
-    mPlane = gl::Batch::create(geom::Rect(Rectf(0, 0, getWindowWidth(), getWindowHeight())), mGlsl);
+    mPlane = gl::Batch::create(geom::Rect(Rectf(-1.0, -1.0, 1.0, 1.0)), mGlsl);
 }
 
 void CinderPlaygroundApp::mouseDown( MouseEvent event )
@@ -64,20 +64,19 @@ void CinderPlaygroundApp::mouseDown( MouseEvent event )
 void CinderPlaygroundApp::update()
 {
     float time = timeline().getCurrentTime();
-    
     controlValue = sin(time);
     
     mGainNode->setValue(controlValue*controlValue);
-    
-    mGlsl->uniform("time", time);
-    mGlsl->uniform("screenWidth", getWindowWidth());
-    mGlsl->uniform("screenHeight", getWindowHeight());
 }
 
 void CinderPlaygroundApp::draw()
 {
 	gl::clear( Color( 0, 0, 0 ) );
     
+    float time = timeline().getCurrentTime();
+    mGlsl->uniform("time", time);
+    mGlsl->uniform("screenWidth", (float)getWindowWidth());
+    mGlsl->uniform("screenHeight", (float)getWindowHeight());
     mPlane->draw();
 }
 

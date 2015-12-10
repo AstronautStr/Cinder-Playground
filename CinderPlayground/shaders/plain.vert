@@ -1,8 +1,9 @@
 #version 330 core
 
-layout (location = 0) in vec3 position;
+in vec4 ciPosition;
+uniform mat4 ciModelViewProjection;
 
 void main()
 {
-    gl_Position = vec4(position.x, position.y, position.z, 1.0);
+    gl_Position = vec4(ciPosition.x, ciPosition.y, ciPosition.z, 1.0);
 }
