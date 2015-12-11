@@ -53,6 +53,7 @@
 		87B3F50F87B14F4BBC65325E /* Resources.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = Resources.h; path = ../include/Resources.h; sourceTree = "<group>"; };
 		8D1107320486CEB800E47090 /* CinderPlayground.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CinderPlayground.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		C666582D6005430A8E4956DF /* CinderPlaygroundApp.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.cpp; name = CinderPlaygroundApp.cpp; path = ../src/CinderPlaygroundApp.cpp; sourceTree = "<group>"; };
+		CFDF196A1C1B215600175DD6 /* CinderPlaygroundApp.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = CinderPlaygroundApp.h; path = ../src/CinderPlaygroundApp.h; sourceTree = "<group>"; };
 		CFF7A7CD1C19F05900529C6A /* generator.frag */ = {isa = PBXFileReference; explicitFileType = sourcecode.glsl; fileEncoding = 4; path = generator.frag; sourceTree = "<group>"; };
 		CFF7A7CE1C19F05900529C6A /* plain.vert */ = {isa = PBXFileReference; explicitFileType = sourcecode.glsl; fileEncoding = 4; path = plain.vert; sourceTree = "<group>"; };
 		E4981A5CC04847538D4EA5EE /* CinderApp.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; name = CinderApp.icns; path = ../resources/CinderApp.icns; sourceTree = "<group>"; };
@@ -92,8 +93,9 @@
 		080E96DDFE201D6D7F000001 /* Source */ = {
 			isa = PBXGroup;
 			children = (
-				CFF7A7CC1C19F05900529C6A /* shaders */,
+				CFDF196A1C1B215600175DD6 /* CinderPlaygroundApp.h */,
 				C666582D6005430A8E4956DF /* CinderPlaygroundApp.cpp */,
+				CFF7A7CC1C19F05900529C6A /* shaders */,
 			);
 			name = Source;
 			sourceTree = "<group>";

@@ -1,5 +1,6 @@
 dependencies: \
   /Users/Astronaut/Documents/Astronaut-git/CinderPlayground/CinderPlayground/src/CinderPlaygroundApp.cpp \
+  /Users/Astronaut/Documents/Astronaut-git/CinderPlayground/CinderPlayground/src/CinderPlaygroundApp.h \
   ../../../cinder_0.9.0_mac/include/cinder/app/RendererGl.h \
   ../../../cinder_0.9.0_mac/include/cinder/audio/audio.h \
   ../../../cinder_0.9.0_mac/include/cinder/audio/Buffer.h \
