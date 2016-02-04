@@ -39,6 +39,8 @@ protected:
     GLfloat* _dataFeedbackBuffer;    
     int _dataLength;
     int _dataBytesSize;
+    int _gridWidth;
+    int _gridHeight;
     
     void _prepareFeedback();
     void _prepareFeedbackProgram();

@@ -57,13 +57,14 @@ void CinderPlaygroundApp::_prepareFeedbackProgram()
 void CinderPlaygroundApp::_prepareFeedbackBuffers()
 {
     // data format
-    _dataLength = 5;
+    _gridWidth = _gridHeight = 5;
+    _dataLength = _gridWidth * _gridHeight;
     _dataBytesSize = _dataLength * sizeof(GLfloat);
     _dataInputBuffer = new GLfloat[_dataLength];
     _dataFeedbackBuffer = new GLfloat[_dataLength];
     for (int i = 0; i < _dataLength; ++i)
     {
-        _dataFeedbackBuffer[i] = _dataInputBuffer[i] = (GLfloat)i;
+        _dataFeedbackBuffer[i] = _dataInputBuffer[i] = (GLfloat)i + 1;
     }
     
     glGenBuffers(1, &_feedbackVbo);
@@ -83,10 +84,26 @@ void CinderPlaygroundApp::_prepareFeedbackVertexArray()
     glBindVertexArray(_feedbackVao);
     glBindBuffer(GL_ARRAY_BUFFER, _feedbackVbo);
     
-    GLint inputAttrib = glGetAttribLocation(_feedbackProgram, "inValue");
     // data format
-    glVertexAttribPointer(inputAttrib, 1, GL_FLOAT, GL_FALSE, 0, 0);
-    glEnableVertexAttribArray(inputAttrib);
+    GLint cellStateAttr = glGetAttribLocation(_feedbackProgram, "inCellState");
+    glVertexAttribPointer(cellStateAttr, 1, GL_FLOAT, GL_FALSE, 0, (GLvoid*)0);
+    glEnableVertexAttribArray(cellStateAttr);
+    
+    int ruleRadius = 1;
+    int counter = 0;
+    for (int i = -ruleRadius; i <= ruleRadius; ++i)
+    {
+        for (int j = -ruleRadius; j <= ruleRadius; j++)
+        {
+            GLint cellAttrib = glGetAttribLocation(_feedbackProgram, "inCell" + toString(counter));
+            int offset = j + i * _gridWidth;
+            
+            glVertexAttribPointer(cellAttrib, 1, GL_FLOAT, GL_FALSE, 0, (GLvoid*)(offset * sizeof(GLfloat)));
+            glEnableVertexAttribArray(cellAttrib);
+            
+            counter++;
+        }
+    }
     
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
@@ -118,7 +135,7 @@ void CinderPlaygroundApp::_updateFeedback()
     
     // data format
     glBeginTransformFeedback(GL_POINTS);                                                                _WTF
-    glDrawArrays(GL_POINTS, 0, _dataLength);                                                            _WTF
+    glDrawArrays(GL_POINTS, 0, _dataLength - 2);                                                        _WTF
     glEndTransformFeedback();
     
     glDisable(GL_RASTERIZER_DISCARD);
@@ -146,6 +163,7 @@ CinderPlaygroundApp::~CinderPlaygroundApp()
 void CinderPlaygroundApp::setup()
 {
     _prepareFeedback();
+    _updateFeedback();
 }
 
 
@@ -165,7 +183,6 @@ void CinderPlaygroundApp::mouseDown( MouseEvent event )
 
 void CinderPlaygroundApp::update()
 {
-    _updateFeedback();
 }
 
 void CinderPlaygroundApp::draw()
