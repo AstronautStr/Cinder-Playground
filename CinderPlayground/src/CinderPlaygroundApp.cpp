@@ -3,56 +3,11 @@
 #include "cinder/app/cocoa/PlatformCocoa.h"
 #include <fstream>
 
+#define _WTF std::cerr << gl::getErrorString(gl::getError()) << endl;
+
 using namespace ci;
 using namespace ci::app;
 using namespace std;
-
-
-FreqModulatorNode::FreqModulatorNode( const Format &format ) : audio::Node( format )
-{
-    mFreq = 0;
-    mMod = 0;
-    
-    mFreqValue = 0;
-    mModValue = 0;
-}
-
-void FreqModulatorNode::setFreq(float freq)
-{
-    lock_guard<mutex> lock( getContext()->getMutex() );
-    mFreq = freq;
-}
-
-void FreqModulatorNode::setMod(float mod)
-{
-    lock_guard<mutex> lock( getContext()->getMutex() );
-    mMod = mod;
-}
-
-void FreqModulatorNode::process( audio::Buffer *buffer )
-{
-    float* data = (float*)buffer->getData();
-    size_t N = buffer->getSize();
-    float sec = getContext()->getNumProcessedSeconds();
-    
-    for (size_t i = 0; i < N; ++i)
-    {
-        float sampleTime = sec + i / getSampleRate();
-        
-        
-        float sgn = glm::sign(mFreq - mFreqValue);
-        mFreqValue += 2000.0 / getSampleRate() * sgn;
-        if ((sgn >= 0 && mFreqValue >= mFreq) || (sgn < 0 && mFreqValue <= mFreq))
-            mFreqValue = mFreq;
-        /*
-        sgn = glm::sign(mMod - mModValue);
-        mModValue += 1.0 / getSampleRate() * sgn;
-        if ((sgn >= 0 && mModValue >= mMod) || (sgn < 0 && mModValue <= mMod))
-            mModValue = mMod;
-        /**/
-        data[i] = mFreqValue;// * (1.0 + sin(2 * M_PI * sampleTime * 0.5 * mModValue) / 2.0);
-    }
-}
 
 std::string readAllText(std::string const& path)
 {
@@ -64,44 +19,138 @@ std::string readAllText(std::string const& path)
     return text.str();
 }
 
+typedef std::basic_string<GLchar>  GLstring;
+
+GLstring lastError(GLuint shader) 
+{
+    GLint logLen{ 0 };
+    glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &logLen);
+    std::vector<GLchar> log;
+    log.resize(logLen, '\0');
+    glGetShaderInfoLog(shader, log.size(), nullptr, log.data());
+    
+    return GLstring(std::begin(log), std::end(log));
+}
+
+
+void CinderPlaygroundApp::_prepareFeedbackProgram()
+{
+    cinder::BufferRef buffer = PlatformCocoa::get()->loadResource("cellular.vert")->getBuffer();
+    std::string vertexShaderSrcString((char*)buffer->getData());
+    GLchar const* const vertexShaderSrc = vertexShaderSrcString.c_str();
+    _feedbackShader = glCreateShader(GL_VERTEX_SHADER);
+    glShaderSource(_feedbackShader, 1, &vertexShaderSrc, nullptr);
+    glCompileShader(_feedbackShader);
+    std::cerr << lastError(_feedbackShader) << std::endl;
+    
+    _feedbackProgram = glCreateProgram();
+    glAttachShader(_feedbackProgram, _feedbackShader);
+    
+    // data format
+    const GLchar* feedbackVaryings[] = { "outValue" };
+    glTransformFeedbackVaryings(_feedbackProgram, 1, feedbackVaryings, GL_INTERLEAVED_ATTRIBS);
+    
+    glLinkProgram(_feedbackProgram);
+    std::cerr << lastError(_feedbackShader) << std::endl;
+}
+
+void CinderPlaygroundApp::_prepareFeedbackBuffers()
+{
+    // data format
+    _dataLength = 5;
+    _dataBytesSize = _dataLength * sizeof(GLfloat);
+    _dataInputBuffer = new GLfloat[_dataLength];
+    _dataFeedbackBuffer = new GLfloat[_dataLength];
+    for (int i = 0; i < _dataLength; ++i)
+    {
+        _dataFeedbackBuffer[i] = _dataInputBuffer[i] = (GLfloat)i;
+    }
+    
+    glGenBuffers(1, &_feedbackVbo);
+    glBindBuffer(GL_ARRAY_BUFFER, _feedbackVbo);
+    glBufferData(GL_ARRAY_BUFFER, _dataBytesSize, _dataInputBuffer, GL_STATIC_DRAW);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    
+    glGenBuffers(1, &_feedbackTfbo);
+    glBindBuffer(GL_ARRAY_BUFFER, _feedbackTfbo);
+    glBufferData(GL_ARRAY_BUFFER, _dataBytesSize, NULL, GL_STATIC_COPY);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+}
+
+void CinderPlaygroundApp::_prepareFeedbackVertexArray()
+{
+    glGenVertexArrays(1, &_feedbackVao);
+    glBindVertexArray(_feedbackVao);
+    glBindBuffer(GL_ARRAY_BUFFER, _feedbackVbo);
+    
+    GLint inputAttrib = glGetAttribLocation(_feedbackProgram, "inValue");
+    // data format
+    glVertexAttribPointer(inputAttrib, 1, GL_FLOAT, GL_FALSE, 0, 0);
+    glEnableVertexAttribArray(inputAttrib);
+    
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
+}
+
+void CinderPlaygroundApp::_prepareFeedback()
+{
+    _prepareFeedbackProgram();
+    _prepareFeedbackBuffers();
+    _prepareFeedbackVertexArray();
+}
+
+void CinderPlaygroundApp::_prepareNextUpdate()
+{
+    glBindBuffer(GL_ARRAY_BUFFER, _feedbackVbo);
+    glBufferSubData(GL_ARRAY_BUFFER, 0, _dataBytesSize, _dataFeedbackBuffer);                           _WTF
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+}
+
+void CinderPlaygroundApp::_updateFeedback()
+{
+    _prepareNextUpdate();
+    
+    glEnable(GL_RASTERIZER_DISCARD);
+    glUseProgram(_feedbackProgram);
+    
+    glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, 0, _feedbackTfbo);
+    glBindVertexArray(_feedbackVao);                                                                    _WTF
+    
+    // data format
+    glBeginTransformFeedback(GL_POINTS);                                                                _WTF
+    glDrawArrays(GL_POINTS, 0, _dataLength);                                                            _WTF
+    glEndTransformFeedback();
+    
+    glDisable(GL_RASTERIZER_DISCARD);
+    
+    glFlush();
+
+    glGetBufferSubData(GL_TRANSFORM_FEEDBACK_BUFFER, 0, _dataBytesSize, _dataFeedbackBuffer);           _WTF
+    glUseProgram(0);
+}
+
+CinderPlaygroundApp::~CinderPlaygroundApp()
+{
+    delete [] _dataInputBuffer;
+    delete [] _dataFeedbackBuffer;
+    
+    glDeleteProgram(_feedbackProgram);
+    glDeleteShader(_feedbackShader);
+    
+    glDeleteBuffers(1, &_feedbackTfbo);
+    glDeleteBuffers(1, &_feedbackVbo);
+    
+    glDeleteVertexArrays(1, &_feedbackVao);
+}
+
 void CinderPlaygroundApp::setup()
 {
-    auto ctx = audio::Context::master();
-    mSineNode = ctx->makeNode(new audio::GenSineNode);
-    mGainNode = ctx->makeNode(new audio::GainNode);
-    
-    mSineNode >> mGainNode >> ctx->getOutput();
-    mGainNode->setValue(1.0);
-    mSineNode->enable();
-    
-    modNode = ctx->makeNode(new FreqModulatorNode);
-    mSineNode->getParamFreq()->setProcessor(modNode);
-    modNode->enable();
-    
-    ctx->enable();
-
-    cinder::BufferRef buffer = PlatformCocoa::get()->loadResource("plain.vert")->getBuffer();
-    char* shaderText = (char*)buffer->getData();
-    std::string vert(shaderText);
-    
-    buffer = PlatformCocoa::get()->loadResource("generator.frag")->getBuffer();
-    shaderText = (char*)buffer->getData();
-    std::string frag(shaderText);
-    
-    mGlsl = gl::GlslProg::create(gl::GlslProg::Format().vertex(vert).fragment(frag));
-    mPlane = gl::Batch::create(geom::Rect(Rectf(-1.0, -1.0, 1.0, 1.0)), mGlsl);
+    _prepareFeedback();
 }
 
 
 void CinderPlaygroundApp::mouseMove( MouseEvent event )
 {
-    mouse = event.getPos();
-    /*
-    modNode->setFreq(40.0 + 200.0 * fabs(mouse.x / getWindowWidth() - 0.5));
-    
-    vec2 delta = mouse - getWindowCenter();
-    delta /= getWindowSize();
-    modNode->setMod(sqrt(delta.x * delta.x + delta.y * delta.y));*/
 }
 
 
@@ -116,20 +165,17 @@ void CinderPlaygroundApp::mouseDown( MouseEvent event )
 
 void CinderPlaygroundApp::update()
 {
-    modNode->setFreq(880.0 + 440.0 * ((1.0 + sin(timeline().getCurrentTime() * 2 * M_PI)) / 2));
+    _updateFeedback();
 }
 
 void CinderPlaygroundApp::draw()
 {
 	gl::clear( Color( 0, 0, 0 ) );
-
-    float time = timeline().getCurrentTime();
-    mGlsl->uniform("time", time);
-    mGlsl->uniform("screenWidth", (float)getWindowWidth());
-    mGlsl->uniform("screenHeight", (float)getWindowHeight());
-    mGlsl->uniform("mouseX", mouse.x);
-    mGlsl->uniform("mouseY", mouse.y);
-    mPlane->draw();
+    
+    for (int i = 0; i < _dataLength; ++i)
+    {
+        gl::drawString(toString(_dataFeedbackBuffer[i]), ivec2(0, 50 * i));
+    }
 }
 
 CINDER_APP( CinderPlaygroundApp, RendererGl )

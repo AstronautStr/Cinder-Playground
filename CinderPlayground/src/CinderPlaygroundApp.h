@@ -12,29 +12,15 @@
 #include "cinder/app/App.h"
 #include "cinder/app/RendererGl.h"
 #include "cinder/gl/gl.h"
-#include "cinder/audio/audio.h"
 
+#include "cinder/Utilities.h"
 
-class FreqModulatorNode : public ci::audio::Node
-{
-public:
-    FreqModulatorNode( const Format &format = Format() );
-    
-    void setFreq(float freq);
-    void setMod(float mod);
-    
-protected:
-    float mFreq;
-    float mFreqValue;
-    float mMod;
-    float mModValue;
-    
-    void process( ci::audio::Buffer *buffer ) override;
-};
 
 class CinderPlaygroundApp : public ci::app::App
 {
 public:
+    ~CinderPlaygroundApp();
+    
     void setup() override;
     void mouseMove( cinder::app::MouseEvent event ) override;
     void mouseDown( cinder::app::MouseEvent event ) override;
@@ -43,16 +29,24 @@ public:
     void draw() override;
     
 protected:
-    ci::audio::GenSineNodeRef mSineNode;
-    ci::audio::GainNodeRef mGainNode;
+    GLuint _feedbackVbo;
+    GLuint _feedbackVao;
+    GLuint _feedbackTfbo;
+    GLuint _feedbackShader;
+    GLuint _feedbackProgram;
     
-    ci::gl::GlslProgRef mGlsl;
-    ci::gl::BatchRef mPlane;
-    std::shared_ptr<FreqModulatorNode> modNode;
+    GLfloat* _dataInputBuffer;
+    GLfloat* _dataFeedbackBuffer;    
+    int _dataLength;
+    int _dataBytesSize;
     
-    glm::vec2 mouse;
+    void _prepareFeedback();
+    void _prepareFeedbackProgram();
+    void _prepareFeedbackBuffers();
+    void _prepareFeedbackVertexArray();
     
-    double controlValue;
+    void _prepareNextUpdate();
+    void _updateFeedback();
 };
 
 #endif /* CinderPlaygroundApp_h */
