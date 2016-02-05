@@ -47,7 +47,7 @@ void CinderPlaygroundApp::_prepareFeedbackProgram()
     glAttachShader(_feedbackProgram, _feedbackShader);
     
     // data format
-    const GLchar* feedbackVaryings[] = { "outValue" };
+    const GLchar* feedbackVaryings[] = { "outCellState" };
     glTransformFeedbackVaryings(_feedbackProgram, 1, feedbackVaryings, GL_INTERLEAVED_ATTRIBS);
     
     glLinkProgram(_feedbackProgram);
@@ -57,14 +57,14 @@ void CinderPlaygroundApp::_prepareFeedbackProgram()
 void CinderPlaygroundApp::_prepareFeedbackBuffers()
 {
     // data format
-    _gridWidth = _gridHeight = 5;
+    _gridWidth = _gridHeight = 10;
     _dataLength = _gridWidth * _gridHeight;
     _dataBytesSize = _dataLength * sizeof(GLfloat);
     _dataInputBuffer = new GLfloat[_dataLength];
     _dataFeedbackBuffer = new GLfloat[_dataLength];
     for (int i = 0; i < _dataLength; ++i)
     {
-        _dataFeedbackBuffer[i] = _dataInputBuffer[i] = (GLfloat)i + 1;
+        _dataFeedbackBuffer[i] = _dataInputBuffer[i] = 1;
     }
     
     glGenBuffers(1, &_feedbackVbo);
@@ -83,11 +83,11 @@ void CinderPlaygroundApp::_prepareFeedbackVertexArray()
     glGenVertexArrays(1, &_feedbackVao);
     glBindVertexArray(_feedbackVao);
     glBindBuffer(GL_ARRAY_BUFFER, _feedbackVbo);
-    
+    //_WTF
     // data format
-    GLint cellStateAttr = glGetAttribLocation(_feedbackProgram, "inCellState");
-    glVertexAttribPointer(cellStateAttr, 1, GL_FLOAT, GL_FALSE, 0, (GLvoid*)0);
-    glEnableVertexAttribArray(cellStateAttr);
+    //GLint cellStateAttr = glGetAttribLocation(_feedbackProgram, "inCellState");
+    //glVertexAttribPointer(cellStateAttr, 1, GL_FLOAT, GL_FALSE, 0, (GLvoid*)0);
+    //glEnableVertexAttribArray(cellStateAttr);
     
     int ruleRadius = 1;
     int counter = 0;
@@ -95,11 +95,12 @@ void CinderPlaygroundApp::_prepareFeedbackVertexArray()
     {
         for (int j = -ruleRadius; j <= ruleRadius; j++)
         {
-            GLint cellAttrib = glGetAttribLocation(_feedbackProgram, "inCell" + toString(counter));
+            std::cerr << counter << endl;
+            GLint cellAttrib = glGetAttribLocation(_feedbackProgram, (std::string("inCell") + toString(counter)).c_str());  //_WTF
             int offset = j + i * _gridWidth;
             
-            glVertexAttribPointer(cellAttrib, 1, GL_FLOAT, GL_FALSE, 0, (GLvoid*)(offset * sizeof(GLfloat)));
-            glEnableVertexAttribArray(cellAttrib);
+            glVertexAttribPointer(cellAttrib, 1, GL_FLOAT, GL_FALSE, 0, (GLvoid*)(offset * sizeof(GLfloat)));              // _WTF
+            glEnableVertexAttribArray(cellAttrib);_WTF
             
             counter++;
         }
@@ -135,7 +136,7 @@ void CinderPlaygroundApp::_updateFeedback()
     
     // data format
     glBeginTransformFeedback(GL_POINTS);                                                                _WTF
-    glDrawArrays(GL_POINTS, 0, _dataLength - 2);                                                        _WTF
+    glDrawArrays(GL_POINTS, 0, _dataLength);                                                        _WTF
     glEndTransformFeedback();
     
     glDisable(GL_RASTERIZER_DISCARD);
@@ -191,7 +192,7 @@ void CinderPlaygroundApp::draw()
     
     for (int i = 0; i < _dataLength; ++i)
     {
-        gl::drawString(toString(_dataFeedbackBuffer[i]), ivec2(0, 50 * i));
+        gl::drawString(toString(_dataFeedbackBuffer[i]), ivec2(i / _gridWidth, i - _gridWidth * (i / _gridWidth)) * ivec2(30, 30));
     }
 }
 
