@@ -16,10 +16,10 @@
 		00B784B60FF439BC000DE1D7 /* CoreAudio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00B784B20FF439BC000DE1D7 /* CoreAudio.framework */; };
 		00B9955A1B128DF400A5C623 /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00B995581B128DF400A5C623 /* IOKit.framework */; };
 		00B9955B1B128DF400A5C623 /* IOSurface.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00B995591B128DF400A5C623 /* IOSurface.framework */; };
-		31AF76BBC31D4163A107EE2A /* CinderPlaygroundApp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C666582D6005430A8E4956DF /* CinderPlaygroundApp.cpp */; };
 		5323E6B20EAFCA74003A9687 /* CoreVideo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5323E6B10EAFCA74003A9687 /* CoreVideo.framework */; };
 		7066DB962F424DD094B257A2 /* CinderApp.icns in Resources */ = {isa = PBXBuildFile; fileRef = E4981A5CC04847538D4EA5EE /* CinderApp.icns */; };
 		8D11072F0486CEB800E47090 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */; };
+		CFEDFC081C6BA8BD005F8597 /* CinderTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CFEDFC061C6BA8BD005F8597 /* CinderTest.cpp */; };
 		CFF7A7CF1C19F05900529C6A /* generator.frag in Resources */ = {isa = PBXBuildFile; fileRef = CFF7A7CD1C19F05900529C6A /* generator.frag */; };
 		CFF7A7D01C19F05900529C6A /* plain.vert in Resources */ = {isa = PBXBuildFile; fileRef = CFF7A7CE1C19F05900529C6A /* plain.vert */; };
 		CFFEA5251C638D130074069C /* cellular.frag in Resources */ = {isa = PBXBuildFile; fileRef = CFFEA5231C638D130074069C /* cellular.frag */; };
@@ -54,8 +54,8 @@
 		5323E6B10EAFCA74003A9687 /* CoreVideo.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreVideo.framework; path = /System/Library/Frameworks/CoreVideo.framework; sourceTree = "<absolute>"; };
 		87B3F50F87B14F4BBC65325E /* Resources.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = Resources.h; path = ../include/Resources.h; sourceTree = "<group>"; };
 		8D1107320486CEB800E47090 /* CinderPlayground.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CinderPlayground.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		C666582D6005430A8E4956DF /* CinderPlaygroundApp.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.cpp; name = CinderPlaygroundApp.cpp; path = ../src/CinderPlaygroundApp.cpp; sourceTree = "<group>"; };
-		CFDF196A1C1B215600175DD6 /* CinderPlaygroundApp.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = CinderPlaygroundApp.h; path = ../src/CinderPlaygroundApp.h; sourceTree = "<group>"; };
+		CFEDFC061C6BA8BD005F8597 /* CinderTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = CinderTest.cpp; path = ../src/CinderTest.cpp; sourceTree = "<group>"; };
+		CFEDFC071C6BA8BD005F8597 /* CinderTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = CinderTest.h; path = ../src/CinderTest.h; sourceTree = "<group>"; };
 		CFF7A7CD1C19F05900529C6A /* generator.frag */ = {isa = PBXFileReference; explicitFileType = sourcecode.glsl; fileEncoding = 4; path = generator.frag; sourceTree = "<group>"; };
 		CFF7A7CE1C19F05900529C6A /* plain.vert */ = {isa = PBXFileReference; explicitFileType = sourcecode.glsl; fileEncoding = 4; path = plain.vert; sourceTree = "<group>"; };
 		CFFEA5231C638D130074069C /* cellular.frag */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; path = cellular.frag; sourceTree = "<group>"; };
@@ -97,8 +97,8 @@
 		080E96DDFE201D6D7F000001 /* Source */ = {
 			isa = PBXGroup;
 			children = (
-				CFDF196A1C1B215600175DD6 /* CinderPlaygroundApp.h */,
-				C666582D6005430A8E4956DF /* CinderPlaygroundApp.cpp */,
+				CFEDFC061C6BA8BD005F8597 /* CinderTest.cpp */,
+				CFEDFC071C6BA8BD005F8597 /* CinderTest.h */,
 				CFF7A7CC1C19F05900529C6A /* shaders */,
 			);
 			name = Source;
@@ -259,7 +259,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				31AF76BBC31D4163A107EE2A /* CinderPlaygroundApp.cpp in Sources */,
+				CFEDFC081C6BA8BD005F8597 /* CinderTest.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
