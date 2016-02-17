@@ -24,7 +24,7 @@ void main()
         {
             if (i != 0 || j != 0)
             {
-                float bro = getCellState(inPosition + ivec2(i, j);
+                float bro = getCellState(inPosition + ivec2(i, j));
                 if (bro > 0)
                     aliveBroCount += 1;
             }
