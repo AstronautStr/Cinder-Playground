@@ -1,26 +1,47 @@
 #version 330 core
 
-// Cells indices :
+uniform samplerBuffer gridSampler;
+uniform ivec2 GridSize;
 
-//          0 1 2
-//          3 4 5
-//          6 7 8
+in ivec2 inPosition;
 
-in float    inCell0_0;
-in float    inCell0_1;
-in float    inCell0_2;
-in float    inCell0_3;
-in float    inCell0_4;
-in float    inCell0_5;
-in float    inCell0_6;
-in float    inCell0_7;
-in float    inCell0_8;
+out float outCellState;
 
-
-
-out float   outCellState;
+float getCellState(ivec2 pos)
+{
+    return texelFetch(gridSampler, pos.x * GridSize.y + pos.y).r;
+}
 
 void main()
 {
-    outCellState = inCell0 + inCell1 + inCell2 + inCell3 + inCell4 + inCell5 + inCell6 + inCell7 + inCell8;
+    int aliveBroCount = 0;
+    float state = getCellState(inPosition);
+    float nextState = state;
+    
+    for (int i = -1; i <= 1; ++i)
+    {
+        for (int j = -1; j <= 1; ++j)
+        {
+            if (i != 0 || j != 0)
+            {
+                float bro = getCellState(inPosition + ivec2(i, j);
+                if (bro > 0)
+                    aliveBroCount += 1;
+            }
+        }
+    }
+    
+    if (state > 0)
+    {
+        if (aliveBroCount == 2 || aliveBroCount == 3)
+            nextState = state;
+        else
+            nextState = 0.0;
+    }
+    else
+    {
+        if (aliveBroCount == 3)
+            nextState = 1.0;
+    }
+    outCellState = nextState;
 }
