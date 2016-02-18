@@ -55,6 +55,8 @@ protected:
     
     GLfloat* _dataResultBuffer;
     
+    cinder::Font mFont;
+    
     cinder::vec2 _mousePos;
     
     int _dataLength;

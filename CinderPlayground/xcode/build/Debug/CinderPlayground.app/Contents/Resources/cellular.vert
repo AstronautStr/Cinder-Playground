@@ -2,6 +2,7 @@
 
 uniform samplerBuffer gridSampler;
 uniform ivec2 GridSize;
+uniform int ruleRadius;
 
 in ivec2 inPosition;
 
@@ -14,33 +15,28 @@ float getCellState(ivec2 pos)
 
 void main()
 {
-    int aliveBroCount = 0;
+    float aliveCount = 0.0;
     float state = getCellState(inPosition);
     float nextState = state;
     
-    for (int i = -1; i <= 1; ++i)
+    for (int i = -ruleRadius; i <= ruleRadius; ++i)
     {
-        for (int j = -1; j <= 1; ++j)
+        for (int j = -ruleRadius; j <= ruleRadius; ++j)
         {
-            if (i != 0 || j != 0)
-            {
-                float bro = getCellState(inPosition + ivec2(i, j));
-                if (bro > 0)
-                    aliveBroCount += 1;
-            }
+            aliveCount += getCellState(inPosition + ivec2(i, j)) * clamp(float(i * i + j * j), 0.0, 1.0);
         }
     }
     
     if (state > 0)
     {
-        if (aliveBroCount == 2 || aliveBroCount == 3)
+        if (aliveCount >= 2 && aliveCount <= 3)
             nextState = state;
         else
             nextState = 0.0;
     }
     else
     {
-        if (aliveBroCount == 3)
+        if (aliveCount == 3)
             nextState = 1.0;
     }
     outCellState = nextState;

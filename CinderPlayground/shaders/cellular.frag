@@ -16,5 +16,5 @@ void main()
     float freq = cell.y / 20000.0;
     float energy = cell.x;
     
-    color = vec4(energy, energy * freq, 0.0, alive);
+    color = vec4(energy, 0, 0, alive);
 }

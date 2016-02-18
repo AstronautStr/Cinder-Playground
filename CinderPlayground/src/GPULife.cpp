@@ -136,9 +136,13 @@ void CinderPlaygroundApp::_prepareFeedbackProgram()
     
     GLint gridSizeLoc = glGetUniformLocation(_CAProgram, "GridSize");
     glProgramUniform2i(_CAProgram, gridSizeLoc, _gridWidth, _gridHeight);
+    
+    GLint ruleRadiusLoc = glGetUniformLocation(_CAProgram, "ruleRadius");
+    glProgramUniform1i(_CAProgram, ruleRadiusLoc, _ruleRadius);
 }
 void CinderPlaygroundApp::_prepareFeedbackBuffers()
 {
+    srand(time(0));
     // data format
     _dataLength = _gridWidth * _gridHeight;
     _dataBytesSize = _dataLength * sizeof(GLfloat);
@@ -151,7 +155,7 @@ void CinderPlaygroundApp::_prepareFeedbackBuffers()
         GLint x = i / _gridHeight;
         GLint y = i - x * _gridHeight;
         
-        _dataResultBuffer[i] = i;
+        _dataResultBuffer[i] = ((double)rand() / RAND_MAX) > 0.5 ? 1.0 : 0.0;
         positionData[i * 2] = x;
         positionData[i * 2 + 1] = y;
     }
@@ -251,15 +255,31 @@ CinderPlaygroundApp::~CinderPlaygroundApp()
 void CinderPlaygroundApp::setup()
 {
     _time = _gridTime = 0.0;
-    _stepTime = 0.5;
+    _stepTime = 0.0;
     _pause = false;
     
     _ruleRadius = 1;
-    _gridWidth = 10;
-    _gridHeight = 10;
+    _gridWidth = 1000;
+    _gridHeight = 1000;
     
     _prepareFeedback();
     _prepareDrawing();
+    
+    Rectf window = Rectf(vec2(0, 0), vec2(_gridWidth, _gridHeight));
+    Rectf display = Rectf(vec2(0, 0), getDisplay()->getSize());
+    float xRatio = display.getWidth() / window.getWidth();
+    float yRatio = display.getHeight() / window.getHeight();
+    
+    float ratio = math<float>::min(xRatio, yRatio);
+    float width = window.getWidth() * ratio;
+    float height = window.getHeight() * ratio;
+    float x = (display.getWidth() - width) / 2;
+    float y = (display.getHeight() - height) / 2;
+    
+    setWindowPos(x, y);
+    setWindowSize(width, height);
+    
+    mFont = Font("Helvetica", 12.0f);
 }
 
 void CinderPlaygroundApp::modifyCell(vec2 point, bool state)
@@ -350,11 +370,8 @@ void CinderPlaygroundApp::draw()
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
     glUseProgram(0);
-    /*
-    for (int i = 0; i < _dataLength; ++i)
-    {
-        gl::drawString(toString(_dataResultBuffer[i]), ivec2(i / _gridHeight, i - _gridHeight * (i / _gridHeight)) * ivec2(30, 30));
-    }*/
+
+    gl::drawString("FPS " + toString(getAverageFps()), vec2( 10.0f, 10.0f ), Color::white(), mFont );
 }
 
 CINDER_APP( CinderPlaygroundApp, RendererGl )

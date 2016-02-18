@@ -26,11 +26,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "../src/GPULife.cpp"
-            timestampString = "477425994.347101"
+            timestampString = "477493468.354025"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "154"
-            endingLineNumber = "154"
+            startingLineNumber = "158"
+            endingLineNumber = "158"
             landmarkName = "CinderPlaygroundApp::_prepareFeedbackBuffers()"
             landmarkType = "5">
          </BreakpointContent>
@@ -42,11 +42,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "../src/GPULife.cpp"
-            timestampString = "477425994.347101"
+            timestampString = "477493468.354025"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "164"
-            endingLineNumber = "164"
+            startingLineNumber = "168"
+            endingLineNumber = "168"
             landmarkName = "CinderPlaygroundApp::_prepareFeedbackBuffers()"
             landmarkType = "5">
          </BreakpointContent>
@@ -58,11 +58,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "../src/GPULife.cpp"
-            timestampString = "477425994.347101"
+            timestampString = "477493468.354025"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "212"
-            endingLineNumber = "212"
+            startingLineNumber = "216"
+            endingLineNumber = "216"
             landmarkName = "CinderPlaygroundApp::_updateFeedback()"
             landmarkType = "5">
          </BreakpointContent>
