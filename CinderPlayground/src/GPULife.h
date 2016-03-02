@@ -33,6 +33,16 @@ public:
     void draw() override;
     
 protected:
+    
+    typedef GLfloat CellAttrib;
+    static GLenum getFeedbackDataFormat()
+    {
+        return GL_R32F;
+    }
+    CellAttrib getRandomCell()
+    {
+        return _cycleStep * (float)(rand() % _cycleN);
+    }
 
     GLuint _cellVAO;
     GLuint _cellVBOCells;
@@ -53,10 +63,9 @@ protected:
     GLuint _drawingVertexShader;
     GLuint _drawingProgram;
     
-    GLfloat* _dataResultBuffer;
+    CellAttrib* _dataResultBuffer;
     
     cinder::Font mFont;
-    
     cinder::vec2 _mousePos;
     
     int _dataLength;
@@ -64,6 +73,8 @@ protected:
     int _gridWidth;
     int _gridHeight;
     int _ruleRadius;
+    int _cycleN;
+    float _cycleStep;
     
     float _time;
     float _stepTime;

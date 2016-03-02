@@ -43,7 +43,6 @@ int cycledIndex(int index, int length)
 }
 
 
-
 void CinderPlaygroundApp::_prepareDrawing()
 {
     _prepareDrawingProgram();
@@ -52,16 +51,14 @@ void CinderPlaygroundApp::_prepareDrawing()
 }
 void CinderPlaygroundApp::_prepareDrawingProgram()
 {
-    cinder::BufferRef bufferF = PlatformCocoa::get()->loadResource("cellular.frag")->getBuffer();
-    std::string fragmentShaderSrcString((char*)bufferF->getData());
+    std::string fragmentShaderSrcString = readAllText(PlatformCocoa::get()->getResourcePath("cellular.frag").string());
     GLchar const* const fragmentShaderSrc = fragmentShaderSrcString.c_str();
     _drawingFragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
     glShaderSource(_drawingFragmentShader, 1, &fragmentShaderSrc, nullptr);
     glCompileShader(_drawingFragmentShader);
     std::cerr << lastError(_drawingFragmentShader) << std::endl;
     
-    cinder::BufferRef bufferV = PlatformCocoa::get()->loadResource("plain.vert")->getBuffer();
-    std::string vertexShaderSrcString((char*)bufferV->getData());
+    std::string vertexShaderSrcString = readAllText(PlatformCocoa::get()->getResourcePath("plain.vert").string());
     GLchar const* const vertexShaderSrc = vertexShaderSrcString.c_str();
     _drawingVertexShader = glCreateShader(GL_VERTEX_SHADER);
     glShaderSource(_drawingVertexShader, 1, &vertexShaderSrc, nullptr);
@@ -77,6 +74,11 @@ void CinderPlaygroundApp::_prepareDrawingProgram()
     
     GLint gridSizeLoc = glGetUniformLocation(_drawingProgram, "gridSize");
     glProgramUniform2f(_drawingProgram, gridSizeLoc, (GLfloat)_gridWidth, (GLfloat)_gridHeight);
+    
+    GLint cycleNLoc = glGetUniformLocation(_drawingProgram, "cycleN");
+    glProgramUniform1i(_drawingProgram, cycleNLoc, _cycleN);
+    GLint cycleStepLoc = glGetUniformLocation(_drawingProgram, "cycleStep");
+    glProgramUniform1f(_drawingProgram, cycleStepLoc, _cycleStep);
     
     _drawingScreenSizeLoc = glGetUniformLocation(_drawingProgram, "screenSize");
 }
@@ -116,8 +118,7 @@ void CinderPlaygroundApp::_prepareFeedback()
 }
 void CinderPlaygroundApp::_prepareFeedbackProgram()
 {
-    cinder::BufferRef buffer = PlatformCocoa::get()->loadResource("cellular.vert")->getBuffer();
-    std::string vertexShaderSrcString((char*)buffer->getData());
+    std::string vertexShaderSrcString = readAllText(PlatformCocoa::get()->getResourcePath("cellular.vert").string());
     GLchar const* const vertexShaderSrc = vertexShaderSrcString.c_str();
     _CAShader = glCreateShader(GL_VERTEX_SHADER);
     glShaderSource(_CAShader, 1, &vertexShaderSrc, nullptr);
@@ -139,15 +140,20 @@ void CinderPlaygroundApp::_prepareFeedbackProgram()
     
     GLint ruleRadiusLoc = glGetUniformLocation(_CAProgram, "ruleRadius");
     glProgramUniform1i(_CAProgram, ruleRadiusLoc, _ruleRadius);
+    
+    GLint cycleNLoc = glGetUniformLocation(_CAProgram, "cycleN");
+    glProgramUniform1i(_CAProgram, cycleNLoc, _cycleN);
+    GLint cycleStepLoc = glGetUniformLocation(_CAProgram, "cycleStep");
+    glProgramUniform1f(_CAProgram, cycleStepLoc, _cycleStep);
 }
 void CinderPlaygroundApp::_prepareFeedbackBuffers()
 {
     srand(time(0));
     // data format
     _dataLength = _gridWidth * _gridHeight;
-    _dataBytesSize = _dataLength * sizeof(GLfloat);
+    _dataBytesSize = _dataLength * sizeof(CellAttrib);
     
-    _dataResultBuffer = new GLfloat[_dataLength];
+    _dataResultBuffer = new CellAttrib[_dataLength];
     int positionBytesSize = _dataLength * 2 * sizeof(GLint);
     GLint* positionData = new GLint[positionBytesSize];
     for (int i = 0; i < _dataLength; ++i)
@@ -155,7 +161,8 @@ void CinderPlaygroundApp::_prepareFeedbackBuffers()
         GLint x = i / _gridHeight;
         GLint y = i - x * _gridHeight;
         
-        _dataResultBuffer[i] = ((double)rand() / RAND_MAX) > 0.5 ? 1.0 : 0.0;
+        CellAttrib newCellState = getRandomCell();
+        _dataResultBuffer[i] = newCellState;
         positionData[i * 2] = x;
         positionData[i * 2 + 1] = y;
     }
@@ -168,7 +175,7 @@ void CinderPlaygroundApp::_prepareFeedbackBuffers()
     glGenTextures(1, &_TBOTex);
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_BUFFER, _TBOTex);
-    glTexBuffer(GL_TEXTURE_BUFFER, GL_R32F, _cellVBOCells);
+    glTexBuffer(GL_TEXTURE_BUFFER, getFeedbackDataFormat(), _cellVBOCells);
     
     glGenBuffers(1, &_cellVBOPos);
     glBindBuffer(GL_ARRAY_BUFFER, _cellVBOPos);
@@ -255,12 +262,15 @@ CinderPlaygroundApp::~CinderPlaygroundApp()
 void CinderPlaygroundApp::setup()
 {
     _time = _gridTime = 0.0;
-    _stepTime = 0.0;
+    _stepTime = 0.04;
     _pause = false;
     
     _ruleRadius = 1;
-    _gridWidth = 1000;
-    _gridHeight = 1000;
+    _cycleN = 4;
+    _cycleStep = 1.0 / (float)_cycleN;
+    
+    _gridWidth = 200;
+    _gridHeight = _gridWidth;
     
     _prepareFeedback();
     _prepareDrawing();
@@ -275,9 +285,12 @@ void CinderPlaygroundApp::setup()
     float height = window.getHeight() * ratio;
     float x = (display.getWidth() - width) / 2;
     float y = (display.getHeight() - height) / 2;
+    //setWindowPos(x, y);
+    //setWindowSize(width, height);
     
-    setWindowPos(x, y);
-    setWindowSize(width, height);
+    int stealthPos = _gridWidth;
+    setWindowPos(display.getWidth() - stealthPos, display.getHeight() - stealthPos);
+    setWindowSize(stealthPos, stealthPos);
     
     mFont = Font("Helvetica", 12.0f);
 }
