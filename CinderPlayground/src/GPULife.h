@@ -14,7 +14,23 @@
 #include "cinder/gl/gl.h"
 
 #include "cinder/Utilities.h"
+#include "AntTweakBar.h"
 
+class KeyEventProxy : public ci::app::KeyEvent
+{
+protected:
+    ci::app::KeyEvent _mEvent;
+public:
+    KeyEventProxy(ci::app::KeyEvent event)
+    {
+        _mEvent = event;
+    }
+    
+    unsigned int getModifiers()
+    {
+        return mModifiers;
+    }
+};
 
 class CinderPlaygroundApp : public ci::app::App
 {
@@ -24,10 +40,13 @@ public:
     void modifyCell(cinder::vec2 point, bool state);
     
     void setup() override;
+    
     void mouseMove( cinder::app::MouseEvent event ) override;
     void mouseDrag( cinder::app::MouseEvent event ) override;
     void mouseDown( cinder::app::MouseEvent event ) override;
     void mouseUp( cinder::app::MouseEvent event ) override;
+    void mouseWheel( cinder::app::MouseEvent event ) override;
+    
     void keyDown( cinder::app::KeyEvent event ) override;
     void update() override;
     void draw() override;
@@ -72,9 +91,11 @@ protected:
     int _dataBytesSize;
     int _gridWidth;
     int _gridHeight;
+    
     int _ruleRadius;
     int _cycleN;
     float _cycleStep;
+    float _tweakVar;
     
     float _time;
     float _stepTime;
@@ -93,6 +114,9 @@ protected:
     void _prepareDrawingProgram();
     void _prepareDrawingBuffers();
     void _prepareDrawingVertexArray();
+    
+    static void TW_CALL _setCallback(const void* value, void* clientData);
+    static void TW_CALL _getCallback(void* value, void* clientData);
 };
 
 #endif /* GPULife_h */

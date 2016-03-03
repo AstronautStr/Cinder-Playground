@@ -3,6 +3,7 @@
 #include "cinder/app/cocoa/PlatformCocoa.h"
 #include <fstream>
 
+
 #define _WTF std::cerr << gl::getErrorString(gl::getError()) << endl;
 
 using namespace ci;
@@ -239,6 +240,8 @@ void CinderPlaygroundApp::_updateFeedback()
 
 CinderPlaygroundApp::~CinderPlaygroundApp()
 {
+    TwTerminate();
+    
     delete [] _dataResultBuffer;
     
     glDeleteProgram(_CAProgram);
@@ -261,6 +264,7 @@ CinderPlaygroundApp::~CinderPlaygroundApp()
 
 void CinderPlaygroundApp::setup()
 {
+    
     _time = _gridTime = 0.0;
     _stepTime = 0.04;
     _pause = false;
@@ -292,7 +296,24 @@ void CinderPlaygroundApp::setup()
     setWindowPos(display.getWidth() - stealthPos, display.getHeight() - stealthPos);
     setWindowSize(stealthPos, stealthPos);
     
+    TwInit(TW_OPENGL_CORE, NULL);
+    TwWindowSize(getWindowWidth(), getWindowHeight());
+    
+    TwBar* myBar;
+    myBar = TwNewBar("TweakBar");
+    TwAddVarCB(myBar, "TweakVar", TW_TYPE_FLOAT, _setCallback, _getCallback, this, "min=0.0 max=1.0 step=0.005");
+    
     mFont = Font("Helvetica", 12.0f);
+}
+
+void TW_CALL CinderPlaygroundApp::_setCallback(const void* value, void* clientData)
+{
+    static_cast<CinderPlaygroundApp*>(clientData)->_tweakVar = *static_cast<const float*>(value);
+}
+
+void TW_CALL CinderPlaygroundApp::_getCallback(void* value, void* clientData)
+{
+    *static_cast<float*>(value) = static_cast<const CinderPlaygroundApp*>(clientData)->_tweakVar;
 }
 
 void CinderPlaygroundApp::modifyCell(vec2 point, bool state)
@@ -303,6 +324,8 @@ void CinderPlaygroundApp::modifyCell(vec2 point, bool state)
 
 void CinderPlaygroundApp::keyDown( KeyEvent event )
 {
+    TwKeyPressed(event.getCode(), KeyEventProxy(event).getModifiers());
+    
     switch (event.getCode())
     {
         case KeyEvent::KEY_SPACE:
@@ -313,10 +336,13 @@ void CinderPlaygroundApp::keyDown( KeyEvent event )
 
 void CinderPlaygroundApp::mouseMove( MouseEvent event )
 {
+    TwMouseMotion(event.getX(), event.getY());
 }
 
 void CinderPlaygroundApp::mouseDrag( MouseEvent event )
 {
+    TwMouseMotion(event.getX(), event.getY());
+    
     _mousePos = event.getPos();
     
     if (event.isLeft())
@@ -329,8 +355,15 @@ void CinderPlaygroundApp::mouseDrag( MouseEvent event )
     }
 }
 
+void CinderPlaygroundApp::mouseWheel( cinder::app::MouseEvent event )
+{
+    TwMouseWheel(event.getWheelIncrement());
+}
+
 void CinderPlaygroundApp::mouseUp( MouseEvent event )
 {
+    TwMouseButton(TwMouseAction::TW_MOUSE_RELEASED, event.isLeft() ? TwMouseButtonID::TW_MOUSE_LEFT : event.isRight() ? TwMouseButtonID::TW_MOUSE_RIGHT : TW_MOUSE_MIDDLE);
+    
     _mousePos = event.getPos();
     
     if (event.isLeft())
@@ -345,10 +378,13 @@ void CinderPlaygroundApp::mouseUp( MouseEvent event )
 
 void CinderPlaygroundApp::mouseDown( MouseEvent event )
 {
+    TwMouseButton(TwMouseAction::TW_MOUSE_PRESSED, event.isLeft() ? TwMouseButtonID::TW_MOUSE_LEFT : event.isRight() ? TwMouseButtonID::TW_MOUSE_RIGHT : TW_MOUSE_MIDDLE);
 }
 
 void CinderPlaygroundApp::update()
 {
+    TwWindowSize(getWindowWidth(), getWindowHeight());
+    
     float newTime = timeline().getCurrentTime();
     float dt = newTime - _time;
     _time = newTime;
@@ -368,6 +404,7 @@ void CinderPlaygroundApp::draw()
 {
 	gl::clear( Color( 0, 0, 0 ) );
     
+    /*
     glUseProgram(_drawingProgram);
     glBindVertexArray(_drawingVAO);
     glBindBuffer(GL_ARRAY_BUFFER, _drawingVBO);
@@ -384,7 +421,9 @@ void CinderPlaygroundApp::draw()
     glBindVertexArray(0);
     glUseProgram(0);
 
-    gl::drawString("FPS " + toString(getAverageFps()), vec2( 10.0f, 10.0f ), Color::white(), mFont );
+    //gl::drawString("FPS " + toString(getAverageFps()), vec2( 10.0f, 10.0f ), Color::white(), mFont );
+    */
+    TwDraw();
 }
 
 CINDER_APP( CinderPlaygroundApp, RendererGl )

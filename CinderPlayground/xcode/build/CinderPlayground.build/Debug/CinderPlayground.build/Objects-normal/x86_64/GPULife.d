@@ -329,6 +329,7 @@ dependencies: \
   ../../../cinder_0.9.0_mac/include/boost/integer.hpp \
   ../../../cinder_0.9.0_mac/include/boost/integer_fwd.hpp \
   ../../../cinder_0.9.0_mac/include/boost/detail/basic_pointerbuf.hpp \
+  /Users/Astronaut/Documents/Astronaut-git/CinderPlayground/CinderPlayground/AntTweakBar/AntTweakBar.h \
   ../../../cinder_0.9.0_mac/include/cinder/Timeline.h \
   ../../../cinder_0.9.0_mac/include/cinder/TimelineItem.h \
   ../../../cinder_0.9.0_mac/include/cinder/Easing.h \

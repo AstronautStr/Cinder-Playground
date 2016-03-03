@@ -88,8 +88,15 @@ float cyclicCA()
         return state;
 }
 
+float freeCA()
+{
+    
+}
+
+
 void main()
 {
     //outCellState = gameOfLife();
-    outCellState = cyclicCA();
+    //outCellState = cyclicCA();
+    outCellState = freeCA();]
 }
