@@ -22,11 +22,10 @@ void main()
     ivec2 cellCoord = ivec2(gl_FragCoord.xy / screenSize * gridSize);
     vec4 cell = texelFetch(gridSampler, int(cellCoord.x * gridSize.x) + cellCoord.y);
     
-    float alive = cell.w;
-    float freq = cell.y / 20000.0;
-    float energy = cell.x;
+    float freq = cell.y / (22000.0 - 20.0);
+    float amp = cell.x;
     
-    //color = vec4(energy, energy, energy, alive);
-    vec3 hsv = hsv2rgb(vec3(energy, 1.0, 1.0));
-    color = vec4(hsv, 1.0);
+    color = vec4(1.0, 1.0, 1.0, sqrt(amp));
+    //vec3 hsv = hsv2rgb(vec3(energy, 1.0, 1.0));
+    //color = vec4(hsv, 1.0);
 }

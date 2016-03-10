@@ -54,13 +54,60 @@ public:
 protected:
     
     typedef GLfloat CellAttrib;
+    typedef GLint RulesBinType;
     static GLenum getFeedbackDataFormat()
     {
-        return GL_R32F;
+        return GL_RGBA32F;
     }
-    CellAttrib getRandomCell()
+    static unsigned int getAttrCount()
     {
-        return _cycleStep * (float)(rand() % _cycleN);
+        return 4;
+    }
+    void getRandomCell(CellAttrib* attr)
+    {
+        float min = 20.0;
+        float max = 22000.0;
+        float randFreq = pow(2.0, (log2(min) + (log2(max) - log2(min)) * ((double)rand() / RAND_MAX)));
+        float randAmp = (double)rand() / RAND_MAX; randAmp *= randAmp;
+        
+        unsigned int i = 0;
+        if (i < getAttrCount())
+            attr[i++] = randAmp;
+        
+        if (i < getAttrCount())
+            attr[i++] = randFreq;
+    }
+    void getInitialCell(CellAttrib* attr)
+    {
+        unsigned int i = 0;
+        if (i < getAttrCount())
+            attr[i++] = 0.0;
+        
+        if (i < getAttrCount())
+            attr[i++] = 440.0;
+    }
+    void getTrueCell(CellAttrib* attr)
+    {
+        unsigned int i = 0;
+        if (i < getAttrCount())
+            attr[i++] = 1.0;
+        
+        if (i < getAttrCount())
+            attr[i++] = 440.0;
+    }
+    unsigned int encodeNeighborhood(CellAttrib* cells, unsigned int size)
+    {
+        RulesBinType result = 0;
+        
+        for (int i = 0; i < size; ++i)
+        {
+            if (cells[i * getAttrCount()] > 0)
+            {
+                result = result | (1 << i);
+            }
+        }
+        
+        return result;
     }
 
     GLuint _cellVAO;
@@ -69,10 +116,17 @@ protected:
     
     GLuint _TBOTex;
     
+    GLuint _rulesBuffer;
+    GLuint _rulesTexture;
+    
+    GLuint _cellsSamplerLoc;
+    GLuint _rulesSamplerLoc;
+    
     GLuint _feedbackBuffer;
     
     GLuint _CAShader;
     GLuint _CAProgram;
+    GLuint _timeUniformCALoc;
     
     GLuint _drawingVAO;
     GLuint _drawingVBO;
@@ -87,6 +141,12 @@ protected:
     cinder::Font mFont;
     cinder::vec2 _mousePos;
     
+    RulesBinType* _rulesData;
+    double _lambda;
+    int _rulesBits;
+    int _rulesLength;
+    int _rulesBytesSize;
+    int _vertexCount;
     int _dataLength;
     int _dataBytesSize;
     int _gridWidth;
@@ -114,6 +174,13 @@ protected:
     void _prepareDrawingProgram();
     void _prepareDrawingBuffers();
     void _prepareDrawingVertexArray();
+    
+    void _clearField();
+    void _randomField();
+    void _randomRules();
+    void _logRules();
+    void _loadRule(RulesBinType* rule);
+    void _updateRulesBuffer();
     
     static void TW_CALL _setCallback(const void* value, void* clientData);
     static void TW_CALL _getCallback(void* value, void* clientData);
