@@ -26,6 +26,9 @@ void main()
     float amp = cell.x;
     
     color = vec4(1.0, 1.0, 1.0, sqrt(amp));
+    
+    //color = vec4(cell.x, cell.y, cell.z, cell.w) / 9.0;
+    
     //vec3 hsv = hsv2rgb(vec3(energy, 1.0, 1.0));
     //color = vec4(hsv, 1.0);
 }

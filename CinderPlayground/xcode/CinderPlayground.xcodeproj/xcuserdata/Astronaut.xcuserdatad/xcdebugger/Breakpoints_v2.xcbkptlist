@@ -26,11 +26,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "../src/GPULife.cpp"
-            timestampString = "479080200.622992"
+            timestampString = "479317577.191884"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "183"
-            endingLineNumber = "183"
+            startingLineNumber = "205"
+            endingLineNumber = "205"
             landmarkName = "CinderPlaygroundApp::_prepareFeedbackBuffers()"
             landmarkType = "5">
          </BreakpointContent>
@@ -42,11 +42,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "../src/GPULife.cpp"
-            timestampString = "479080574.126029"
+            timestampString = "479317577.191884"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "191"
-            endingLineNumber = "191"
+            startingLineNumber = "213"
+            endingLineNumber = "213"
             landmarkName = "CinderPlaygroundApp::_prepareFeedbackBuffers()"
             landmarkType = "5">
          </BreakpointContent>
@@ -58,11 +58,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "../src/GPULife.cpp"
-            timestampString = "479080593.775896"
+            timestampString = "479317577.191884"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "190"
-            endingLineNumber = "190"
+            startingLineNumber = "212"
+            endingLineNumber = "212"
             landmarkName = "CinderPlaygroundApp::_prepareFeedbackBuffers()"
             landmarkType = "5">
          </BreakpointContent>
@@ -74,11 +74,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "../src/GPULife.cpp"
-            timestampString = "479085054.759428"
+            timestampString = "479317577.191884"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "267"
-            endingLineNumber = "267"
+            startingLineNumber = "289"
+            endingLineNumber = "289"
             landmarkName = "CinderPlaygroundApp::_updateFeedback()"
             landmarkType = "5">
          </BreakpointContent>
@@ -90,12 +90,60 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "../src/GPULife.cpp"
-            timestampString = "479126900.87125"
+            timestampString = "479317577.191884"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "500"
-            endingLineNumber = "500"
+            startingLineNumber = "529"
+            endingLineNumber = "529"
             landmarkName = "CinderPlaygroundApp::mouseUp( MouseEvent event )"
+            landmarkType = "5">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "../src/GPULife.h"
+            timestampString = "479314247.391505"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "63"
+            endingLineNumber = "63"
+            landmarkName = "getValue()"
+            landmarkType = "5">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "../src/GPULife.cpp"
+            timestampString = "479317577.191884"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "162"
+            endingLineNumber = "162"
+            landmarkName = "CinderPlaygroundApp::_prepareFeedbackProgram()"
+            landmarkType = "5">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "../src/GPULife.cpp"
+            timestampString = "479314156.695842"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "127"
+            endingLineNumber = "127"
+            landmarkName = "CinderPlaygroundApp::_prepareFeedbackProgram()"
             landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>

@@ -1,6 +1,6 @@
 dependencies: \
-  /Users/Astronaut/Cinder-Playground/CinderPlayground/src/GPULife.cpp \
-  /Users/Astronaut/Cinder-Playground/CinderPlayground/src/GPULife.h \
+  /Users/Astronaut/Documents/Astronaut-git/CinderPlayground/CinderPlayground/src/GPULife.cpp \
+  /Users/Astronaut/Documents/Astronaut-git/CinderPlayground/CinderPlayground/src/GPULife.h \
   ../../../cinder_0.9.0_mac/include/cinder/app/RendererGl.h \
   ../../../cinder_0.9.0_mac/include/cinder/Utilities.h \
   ../../../cinder_0.9.0_mac/include/boost/lexical_cast.hpp \
@@ -329,7 +329,7 @@ dependencies: \
   ../../../cinder_0.9.0_mac/include/boost/integer.hpp \
   ../../../cinder_0.9.0_mac/include/boost/integer_fwd.hpp \
   ../../../cinder_0.9.0_mac/include/boost/detail/basic_pointerbuf.hpp \
-  /Users/Astronaut/Cinder-Playground/CinderPlayground/AntTweakBar/AntTweakBar.h \
+  /Users/Astronaut/Documents/Astronaut-git/CinderPlayground/CinderPlayground/AntTweakBar/AntTweakBar.h \
   ../../../cinder_0.9.0_mac/include/cinder/Timeline.h \
   ../../../cinder_0.9.0_mac/include/cinder/TimelineItem.h \
   ../../../cinder_0.9.0_mac/include/cinder/Easing.h \

@@ -3,9 +3,6 @@
 #include "cinder/app/cocoa/PlatformCocoa.h"
 #include <fstream>
 
-
-#define _WTF std::cerr << gl::getErrorString(gl::getError()) << endl;
-
 using namespace ci;
 using namespace ci::app;
 using namespace std;
@@ -150,6 +147,31 @@ void CinderPlaygroundApp::_prepareFeedbackProgram()
     _timeUniformCALoc = glGetUniformLocation(_CAProgram, "time");
     _cellsSamplerLoc = glGetUniformLocation(_CAProgram, "cellsSampler");
     _rulesSamplerLoc = glGetUniformLocation(_CAProgram, "rulesSampler");
+    
+    
+    TwBar* CAControl;
+    CAControl = TwNewBar("CAControl");
+    _showBar = false;
+    TwDefine(" CAControl visible=false ");
+    
+    _rulesBirthCenter = new UniformLink(_CAProgram, "rulesBirthCenter", 3.5);
+    _rulesBirthRadius = new UniformLink(_CAProgram, "rulesBirthRadius", 0.5);
+    _rulesKeepCenter = new UniformLink(_CAProgram, "rulesKeepCenter", 3.0);
+    _rulesKeepRadius = new UniformLink(_CAProgram, "rulesKeepRadius", 1.0);
+    
+    TwAddVarCB(CAControl, "rulesBirthCenter", TW_TYPE_FLOAT, _setCallback, _getCallback, _rulesBirthCenter, "min=0.0 max=9.0 step=0.01");
+    TwAddVarCB(CAControl, "rulesBirthRadius", TW_TYPE_FLOAT, _setCallback, _getCallback, _rulesBirthRadius, "min=0.0 max=9.0 step=0.01");
+    TwAddVarCB(CAControl, "rulesKeepCenter", TW_TYPE_FLOAT, _setCallback, _getCallback, _rulesKeepCenter, "min=0.0 max=9.0 step=0.01");
+    TwAddVarCB(CAControl, "rulesKeepRadius", TW_TYPE_FLOAT, _setCallback, _getCallback, _rulesKeepRadius, "min=0.0 max=9.0 step=0.01");
+}
+void TW_CALL CinderPlaygroundApp::_setCallback(const void* value, void* clientData)
+{
+    static_cast<UniformLink*>(clientData)->setValue(*static_cast<const GLfloat*>(value));
+}
+
+void TW_CALL CinderPlaygroundApp::_getCallback(void* value, void* clientData)
+{
+    *static_cast<GLfloat*>(value) = static_cast<const UniformLink*>(clientData)->getValue();
 }
 void CinderPlaygroundApp::_prepareFeedbackBuffers()
 {
@@ -281,6 +303,11 @@ CinderPlaygroundApp::~CinderPlaygroundApp()
 {
     TwTerminate();
     
+    delete _rulesBirthCenter;
+    delete _rulesBirthRadius;
+    delete _rulesKeepCenter;
+    delete _rulesKeepRadius;
+    
     delete [] _dataResultBuffer;
     delete [] _rulesData;
     
@@ -304,6 +331,8 @@ CinderPlaygroundApp::~CinderPlaygroundApp()
     glDeleteVertexArrays(1, &_drawingVAO);
 }
 
+
+
 void CinderPlaygroundApp::setup()
 {
     _time = _gridTime = 0.0;
@@ -317,6 +346,9 @@ void CinderPlaygroundApp::setup()
     
     _gridWidth = 64;
     _gridHeight = _gridWidth;
+    
+    TwInit(TW_OPENGL_CORE, NULL);
+    TwWindowSize(getWindowWidth(), getWindowHeight());
     
     _prepareFeedback();
     _prepareDrawing();
@@ -334,30 +366,15 @@ void CinderPlaygroundApp::setup()
     setWindowPos(x, y);
     setWindowSize(width, height);
     
-    //int stealthPos = _gridWidth;
-    //setWindowPos(display.getWidth() - stealthPos, display.getHeight() - stealthPos);
-    //setWindowSize(stealthPos, stealthPos);
-    
-    TwInit(TW_OPENGL_CORE, NULL);
-    TwWindowSize(getWindowWidth(), getWindowHeight());
-    
-    _tweakVar = 0.5;
-    TwBar* myBar;
-    //myBar = TwNewBar("TweakBar");
-    //TwAddVarCB(myBar, "_tweakVar", TW_TYPE_DOUBLE, _setCallback, _getCallback, this, "min=0.0 max=1.0 step=0.01");
-    
+    bool stealth = true;
+    if (stealth)
+    {
+        int stealthPos = _gridWidth;
+        setWindowPos(display.getWidth() - stealthPos, display.getHeight() - stealthPos);
+        setWindowSize(stealthPos, stealthPos);
+    }
+
     mFont = Font("Helvetica", 12.0f);
-}
-
-void TW_CALL CinderPlaygroundApp::_setCallback(const void* value, void* clientData)
-{
-    static_cast<CinderPlaygroundApp*>(clientData)->_lambda = *static_cast<const double*>(value);
-    static_cast<CinderPlaygroundApp*>(clientData)->_randomRules();
-}
-
-void TW_CALL CinderPlaygroundApp::_getCallback(void* value, void* clientData)
-{
-    *static_cast<double*>(value) = static_cast<const CinderPlaygroundApp*>(clientData)->_lambda;
 }
 
 void CinderPlaygroundApp::modifyCell(vec2 point, bool state)
@@ -465,20 +482,31 @@ void CinderPlaygroundApp::keyDown( KeyEvent event )
         case KeyEvent::KEY_l:
             _loadRule(0);
             break;
+            
+        case KeyEvent::KEY_b:
+            _showBar = !_showBar;
+            if (_showBar)
+                TwDefine(" CAControl visible=true ");
+            else
+                TwDefine(" CAControl visible=false ");
+            break;
     }
 }
 
 void CinderPlaygroundApp::mouseMove( MouseEvent event )
 {
     _mousePos = event.getPos();
-    TwMouseMotion(event.getX(), event.getY());
+    
+    if (TwMouseMotion(event.getX(), event.getY()))
+        return;
 }
 
 void CinderPlaygroundApp::mouseDrag( MouseEvent event )
 {
     _mousePos = event.getPos();
     
-    TwMouseMotion(event.getX(), event.getY());
+    if (TwMouseMotion(event.getX(), event.getY()))
+        return;
     
     if (event.isLeft())
     {
@@ -492,14 +520,16 @@ void CinderPlaygroundApp::mouseDrag( MouseEvent event )
 
 void CinderPlaygroundApp::mouseWheel( cinder::app::MouseEvent event )
 {
-    TwMouseWheel(event.getWheelIncrement());
+    if (TwMouseWheel(event.getWheelIncrement()))
+        return;
 }
 
 void CinderPlaygroundApp::mouseUp( MouseEvent event )
 {
     _mousePos = event.getPos();
     
-    TwMouseButton(TwMouseAction::TW_MOUSE_RELEASED, event.isLeft() ? TwMouseButtonID::TW_MOUSE_LEFT : event.isRight() ? TwMouseButtonID::TW_MOUSE_RIGHT : TW_MOUSE_MIDDLE);
+    if (TwMouseButton(TwMouseAction::TW_MOUSE_RELEASED, event.isLeft() ? TwMouseButtonID::TW_MOUSE_LEFT : event.isRight() ? TwMouseButtonID::TW_MOUSE_RIGHT : TW_MOUSE_MIDDLE))
+        return;
     
     if (event.isLeft())
     {
@@ -513,7 +543,8 @@ void CinderPlaygroundApp::mouseUp( MouseEvent event )
 
 void CinderPlaygroundApp::mouseDown( MouseEvent event )
 {
-    TwMouseButton(TwMouseAction::TW_MOUSE_PRESSED, event.isLeft() ? TwMouseButtonID::TW_MOUSE_LEFT : event.isRight() ? TwMouseButtonID::TW_MOUSE_RIGHT : TW_MOUSE_MIDDLE);
+    if (TwMouseButton(TwMouseAction::TW_MOUSE_PRESSED, event.isLeft() ? TwMouseButtonID::TW_MOUSE_LEFT : event.isRight() ? TwMouseButtonID::TW_MOUSE_RIGHT : TW_MOUSE_MIDDLE))
+        return;
 }
 
 void CinderPlaygroundApp::update()

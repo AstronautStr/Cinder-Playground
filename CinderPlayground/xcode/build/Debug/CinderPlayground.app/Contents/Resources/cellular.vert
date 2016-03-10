@@ -1,5 +1,10 @@
 #version 330 core
+
+
+in ivec2 inPosition;
+
 #define DATA_TYPE vec4
+out DATA_TYPE outCellState;
 
 uniform samplerBuffer cellsSampler;
 uniform isamplerBuffer rulesSampler;
@@ -7,14 +12,15 @@ uniform isamplerBuffer rulesSampler;
 uniform ivec2 GridSize;
 
 uniform int ruleRadius;
+uniform float rulesBirthCenter;
+uniform float rulesBirthRadius;
+uniform float rulesKeepCenter;
+uniform float rulesKeepRadius;
+
 uniform int cycleN;
 uniform float cycleStep;
 
 uniform float time;
-
-in ivec2 inPosition;
-
-out DATA_TYPE outCellState;
 
 vec4 getFullCellState(ivec2 pos)
 {
@@ -353,31 +359,13 @@ vec4 contValues()
             neighborsSum += getCellState(inPosition + ivec2(i, j));
         }
     }
-    /*
-    float nextState = 0.0;
-    if (state < 0.5 && neighborsSum >= 3.0 && neighborsSum < 4.0)
-    {
-        nextState = 1.0 - state;
-    }
-    else if (state > 0.5 && neighborsSum >= 2.0 && neighborsSum < 4.0)
-    {
-        nextState = state;
-    }
-    return vec4(nextState, 0.0, 0.0, 1.0);
-     */
-    
-    const float birthCenter = 3.0;
-    const float birthRadius = 0.66;
-    
-    const float keepCenter = 3.0;
-    const float keepRadius = 0.9;
-    
+
     float delta = -1.0;
-    if (neighborsSum >= birthCenter - birthRadius && neighborsSum <= birthCenter + birthRadius)
+    if (neighborsSum >= rulesBirthCenter - rulesBirthRadius && neighborsSum <= rulesBirthCenter + rulesBirthRadius)
     {
         delta = 1.0;
     }
-    else if (neighborsSum >= keepCenter - keepRadius && neighborsSum <= keepCenter + keepRadius)
+    else if (neighborsSum >= rulesKeepCenter - rulesKeepRadius && neighborsSum <= rulesKeepCenter + rulesKeepRadius)
     {
         delta = 0.0;
     }
@@ -395,7 +383,7 @@ void main()
     //outCellState = lichens();
     //outCellState = majority();
     //outCellState = anneal();
-    //outCellState = gameOfLife();
+    //outCellState = vec4(gameOfLife(), 0.0, 0.0, 0.0);
     //outCellState = cyclicCA();
     //outCellState = freeCA();
 }

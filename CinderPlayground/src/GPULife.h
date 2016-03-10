@@ -16,6 +16,10 @@
 #include "cinder/Utilities.h"
 #include "AntTweakBar.h"
 
+#include <iostream>
+
+#define _WTF std::cerr << cinder::gl::getErrorString(cinder::gl::getError()) << std::endl;
+
 class KeyEventProxy : public ci::app::KeyEvent
 {
 protected:
@@ -32,9 +36,41 @@ public:
     }
 };
 
+class UniformLink
+{
+protected:
+    GLuint _program;
+    
+    GLfloat _value;
+    GLint _valueLoc;
+    
+public:
+    UniformLink(GLuint program, const std::string& uniformName, GLfloat value = 0.0)
+    {
+        _program = program;
+        _valueLoc = glGetUniformLocation(program, uniformName.c_str());
+        setValue(value);
+    }
+    
+    void setValue(GLfloat value)
+    {
+        _value = value;
+        glProgramUniform1f(_program, _valueLoc, _value);
+    }
+    
+    GLfloat getValue() const
+    {
+        return _value;
+    }
+};
+
 class CinderPlaygroundApp : public ci::app::App
 {
 public:
+    CinderPlaygroundApp()
+    {
+        
+    }
     ~CinderPlaygroundApp();
     
     void modifyCell(cinder::vec2 point, bool state);
@@ -155,12 +191,17 @@ protected:
     int _ruleRadius;
     int _cycleN;
     float _cycleStep;
-    float _tweakVar;
+    
+    UniformLink* _rulesBirthCenter;
+    UniformLink* _rulesBirthRadius;
+    UniformLink* _rulesKeepCenter;
+    UniformLink* _rulesKeepRadius;
     
     float _time;
     float _stepTime;
     float _gridTime;
     bool _pause;
+    bool _showBar;
     
     void _prepareFeedback();
     void _prepareFeedbackProgram();
