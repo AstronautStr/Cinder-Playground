@@ -173,6 +173,7 @@ protected:
     GLuint _drawingProgram;
     
     CellAttrib* _dataResultBuffer;
+    CellAttrib* _snapshotBuffer;
     
     cinder::Font mFont;
     cinder::vec2 _mousePos;
@@ -196,6 +197,7 @@ protected:
     UniformLink* _rulesBirthRadius;
     UniformLink* _rulesKeepCenter;
     UniformLink* _rulesKeepRadius;
+    bool _linkRuleCenters;
     
     float _time;
     float _stepTime;
@@ -222,6 +224,8 @@ protected:
     void _logRules();
     void _loadRule(RulesBinType* rule);
     void _updateRulesBuffer();
+    void _saveSnapshot();
+    void _loadSnapshot();
     
     static void TW_CALL _setCallback(const void* value, void* clientData);
     static void TW_CALL _getCallback(void* value, void* clientData);

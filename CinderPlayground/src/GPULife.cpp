@@ -154,10 +154,10 @@ void CinderPlaygroundApp::_prepareFeedbackProgram()
     _showBar = false;
     TwDefine(" CAControl visible=false ");
     
-    _rulesBirthCenter = new UniformLink(_CAProgram, "rulesBirthCenter", 3.5);
-    _rulesBirthRadius = new UniformLink(_CAProgram, "rulesBirthRadius", 0.5);
-    _rulesKeepCenter = new UniformLink(_CAProgram, "rulesKeepCenter", 3.0);
-    _rulesKeepRadius = new UniformLink(_CAProgram, "rulesKeepRadius", 1.0);
+    _rulesBirthCenter = new UniformLink(_CAProgram, "rulesBirthCenter", 1.89);
+    _rulesBirthRadius = new UniformLink(_CAProgram, "rulesBirthRadius", 0.35);
+    _rulesKeepCenter = new UniformLink(_CAProgram, "rulesKeepCenter", 1.89);
+    _rulesKeepRadius = new UniformLink(_CAProgram, "rulesKeepRadius", 0.36);
     
     TwAddVarCB(CAControl, "rulesBirthCenter", TW_TYPE_FLOAT, _setCallback, _getCallback, _rulesBirthCenter, "min=0.0 max=9.0 step=0.01");
     TwAddVarCB(CAControl, "rulesBirthRadius", TW_TYPE_FLOAT, _setCallback, _getCallback, _rulesBirthRadius, "min=0.0 max=9.0 step=0.01");
@@ -182,6 +182,7 @@ void CinderPlaygroundApp::_prepareFeedbackBuffers()
     _dataBytesSize = _dataLength * sizeof(CellAttrib);
     
     _dataResultBuffer = new GLfloat[_dataLength];
+    _snapshotBuffer = new GLfloat[_dataLength];
     
     int positionBytesSize = _vertexCount * 2 * sizeof(GLint);
     GLint* positionData = new GLint[positionBytesSize];
@@ -309,6 +310,7 @@ CinderPlaygroundApp::~CinderPlaygroundApp()
     delete _rulesKeepRadius;
     
     delete [] _dataResultBuffer;
+    delete [] _snapshotBuffer;
     delete [] _rulesData;
     
     glDeleteProgram(_CAProgram);
@@ -344,7 +346,7 @@ void CinderPlaygroundApp::setup()
     _cycleN = 4;
     _cycleStep = 1.0 / (float)_cycleN;
     
-    _gridWidth = 64;
+    _gridWidth = 32;
     _gridHeight = _gridWidth;
     
     TwInit(TW_OPENGL_CORE, NULL);
@@ -366,7 +368,7 @@ void CinderPlaygroundApp::setup()
     setWindowPos(x, y);
     setWindowSize(width, height);
     
-    bool stealth = true;
+    bool stealth = false;
     if (stealth)
     {
         int stealthPos = _gridWidth;
@@ -404,6 +406,21 @@ void CinderPlaygroundApp::_randomField()
     }
 }
 
+void CinderPlaygroundApp::_loadSnapshot()
+{
+    for (int i = 0; i < _vertexCount; ++i)
+    {
+        _dataResultBuffer[i * getAttrCount()] = _snapshotBuffer[i * getAttrCount()];
+    }
+}
+
+void CinderPlaygroundApp::_saveSnapshot()
+{
+    for (int i = 0; i < _vertexCount; ++i)
+    {
+        _snapshotBuffer[i * getAttrCount()] = _dataResultBuffer[i * getAttrCount()];
+    }
+}
 
 void CinderPlaygroundApp::_updateRulesBuffer()
 {
@@ -476,11 +493,13 @@ void CinderPlaygroundApp::keyDown( KeyEvent event )
             break;
             
         case KeyEvent::KEY_s:
-            _logRules();
+            //_logRules();
+            _saveSnapshot();
             break;
             
         case KeyEvent::KEY_l:
-            _loadRule(0);
+            //_loadRule(0);
+            _loadSnapshot();
             break;
             
         case KeyEvent::KEY_b:

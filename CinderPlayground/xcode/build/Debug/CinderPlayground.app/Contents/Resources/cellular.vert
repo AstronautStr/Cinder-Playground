@@ -361,11 +361,14 @@ vec4 contValues()
     }
 
     float delta = -1.0;
+    float keepCenter = rulesKeepCenter;
+    // test
+    keepCenter = rulesBirthCenter;
     if (neighborsSum >= rulesBirthCenter - rulesBirthRadius && neighborsSum <= rulesBirthCenter + rulesBirthRadius)
     {
         delta = 1.0;
     }
-    else if (neighborsSum >= rulesKeepCenter - rulesKeepRadius && neighborsSum <= rulesKeepCenter + rulesKeepRadius)
+    else if (neighborsSum >= keepCenter - rulesKeepRadius && neighborsSum <= keepCenter + rulesKeepRadius)
     {
         delta = 0.0;
     }
