@@ -25,7 +25,7 @@ void main()
     float freq = cell.y / (22000.0 - 20.0);
     float amp = cell.x;
     
-    color = vec4(1.0, 1.0, 1.0, sqrt(amp));
+    color = vec4(1.0, 1.0, 1.0, mod(gl_FragCoord.x, screenSize.x / gridSize.x) < 1.0 ? 0.1 : mod(gl_FragCoord.y, screenSize.y / gridSize.y) < 1.0 ? 0.1 : sqrt(amp));
     
     //color = vec4(cell.x, cell.y, cell.z, cell.w) / 9.0;
     

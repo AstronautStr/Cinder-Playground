@@ -104,7 +104,7 @@ protected:
         float min = 20.0;
         float max = 22000.0;
         float randFreq = pow(2.0, (log2(min) + (log2(max) - log2(min)) * ((double)rand() / RAND_MAX)));
-        float randAmp = (double)rand() / RAND_MAX; randAmp *= randAmp;
+        float randAmp = (double)rand() / RAND_MAX; //randAmp *= randAmp;
         
         unsigned int i = 0;
         if (i < getAttrCount())
@@ -197,6 +197,7 @@ protected:
     UniformLink* _rulesBirthRadius;
     UniformLink* _rulesKeepCenter;
     UniformLink* _rulesKeepRadius;
+    UniformLink* _rulesDelta;
     bool _linkRuleCenters;
     
     float _time;

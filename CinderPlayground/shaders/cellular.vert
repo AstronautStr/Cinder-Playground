@@ -16,6 +16,7 @@ uniform float rulesBirthCenter;
 uniform float rulesBirthRadius;
 uniform float rulesKeepCenter;
 uniform float rulesKeepRadius;
+uniform float rulesDelta;
 
 uniform int cycleN;
 uniform float cycleStep;
@@ -363,7 +364,7 @@ vec4 contValues()
     float delta = -1.0;
     float keepCenter = rulesKeepCenter;
     // test
-    keepCenter = rulesBirthCenter;
+    //keepCenter = rulesBirthCenter;
     if (neighborsSum >= rulesBirthCenter - rulesBirthRadius && neighborsSum <= rulesBirthCenter + rulesBirthRadius)
     {
         delta = 1.0;
@@ -372,7 +373,7 @@ vec4 contValues()
     {
         delta = 0.0;
     }
-    float nextState = clamp(state + delta * 0.07, 0.0, 1.0);
+    float nextState = clamp(state + delta * rulesDelta, 0.0, 1.0);
     return vec4(nextState, 0.0, 0.0, 1.0);
 }
 
