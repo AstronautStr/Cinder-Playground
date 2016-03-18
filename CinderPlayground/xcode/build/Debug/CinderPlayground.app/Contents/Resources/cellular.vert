@@ -1,5 +1,6 @@
 #version 330 core
 
+#define M_PI 3.14159265358979323846
 
 in ivec2 inPosition;
 
@@ -16,6 +17,7 @@ uniform float rulesBirthCenter;
 uniform float rulesBirthRadius;
 uniform float rulesKeepCenter;
 uniform float rulesKeepRadius;
+uniform float rulesStep;
 
 uniform int cycleN;
 uniform float cycleStep;
@@ -255,11 +257,15 @@ float rand(vec2 co)
     return fract(sin(dot(co.xy, vec2(12.9898, 78.233))) * 43758.5453);
 }
 
+float randFreq(float min, float max)
+{
+    return pow(2.0, (log2(min) + (log2(max) - log2(min)) * rand(vec2(fract(time), 1.0))));
+    //return min + (max / min - 1) * rand(vec2(inPosition.x / GridSize.x + fract(time), inPosition.y / GridSize.y + fract(time + 0.5)));
+}
+
 float randFreq()
 {
-    float min = 20.0;
-    float max = 22000.0;
-    return pow(2.0, (log2(min) + (log2(max) - log2(min)) * rand(vec2(fract(time), 1.0))));
+    return randFreq(20.0, 22000.0);
 }
 
 vec4 harm()
@@ -373,9 +379,49 @@ vec4 contValues()
     return vec4(nextState, 0.0, 0.0, 1.0);
 }
 
+vec4 sineRule()
+{
+    vec4 state = getFullCellState(inPosition);
+    float amp = state.x;
+    float freq = state.y;
+    
+    if (amp == 0.0)
+    {
+        freq = randFreq(0.125, 2.0);
+    }
+    
+    float sum = sin(2 * M_PI * time * freq);
+    for (int i = -ruleRadius; i <= ruleRadius; ++i)
+    {
+        for (int j = -ruleRadius; j <= ruleRadius; ++j)
+        {
+            if (!checkMoore(i, j))
+                continue;
+            
+            vec4 broState = getFullCellState(inPosition + ivec2(i, j));
+            sum += broState.x * sin(2 * M_PI * time * broState.y);
+        }
+    }
+    
+    float delta = -1.0;
+    if (sum >= rulesBirthCenter - rulesBirthRadius && sum <= rulesBirthCenter + rulesBirthRadius)
+    {
+        delta = 1.0;
+    }
+    else if (sum >= rulesKeepCenter - rulesKeepRadius && sum <= rulesKeepCenter + rulesKeepRadius)
+    {
+        delta = 0.0;
+    }
+
+    amp = clamp(amp + delta * rulesStep, 0.0, 1.0);
+    
+    return vec4(amp, freq, 0.0, 0.0);
+}
+
 void main()
 {
-    outCellState = contValues();
+    outCellState = sineRule();
+    //outCellState = contValues();
     //outCellState = customRules();
     //outCellState = harm();
     //outCellState = oneOut();

@@ -154,15 +154,17 @@ void CinderPlaygroundApp::_prepareFeedbackProgram()
     _showBar = false;
     TwDefine(" CAControl visible=false ");
     
-    _rulesBirthCenter = new UniformLink(_CAProgram, "rulesBirthCenter", 3.5);
-    _rulesBirthRadius = new UniformLink(_CAProgram, "rulesBirthRadius", 0.5);
-    _rulesKeepCenter = new UniformLink(_CAProgram, "rulesKeepCenter", 3.0);
-    _rulesKeepRadius = new UniformLink(_CAProgram, "rulesKeepRadius", 1.0);
+    _rulesBirthCenter = new UniformLink(_CAProgram, "rulesBirthCenter", 1.9);
+    _rulesBirthRadius = new UniformLink(_CAProgram, "rulesBirthRadius", 0.35);
+    _rulesKeepCenter = new UniformLink(_CAProgram, "rulesKeepCenter", 1.9);
+    _rulesKeepRadius = new UniformLink(_CAProgram, "rulesKeepRadius", 0.36);
+    _rulesStep = new UniformLink(_CAProgram, "rulesStep", 0.07);
     
     TwAddVarCB(CAControl, "rulesBirthCenter", TW_TYPE_FLOAT, _setCallback, _getCallback, _rulesBirthCenter, "min=0.0 max=9.0 step=0.01");
     TwAddVarCB(CAControl, "rulesBirthRadius", TW_TYPE_FLOAT, _setCallback, _getCallback, _rulesBirthRadius, "min=0.0 max=9.0 step=0.01");
     TwAddVarCB(CAControl, "rulesKeepCenter", TW_TYPE_FLOAT, _setCallback, _getCallback, _rulesKeepCenter, "min=0.0 max=9.0 step=0.01");
     TwAddVarCB(CAControl, "rulesKeepRadius", TW_TYPE_FLOAT, _setCallback, _getCallback, _rulesKeepRadius, "min=0.0 max=9.0 step=0.01");
+    TwAddVarCB(CAControl, "rulesStep", TW_TYPE_FLOAT, _setCallback, _getCallback, _rulesStep, "min=0.0 max=1.0 step=0.001");
 }
 void TW_CALL CinderPlaygroundApp::_setCallback(const void* value, void* clientData)
 {

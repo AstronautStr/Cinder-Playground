@@ -99,11 +99,13 @@ protected:
     {
         return 4;
     }
+    static float getRandFreq(float min = 20, float max = 22000)
+    {
+        //return pow(2.0, (log2(min) + (log2(max) - log2(min)) * ((double)rand() / RAND_MAX)));
+        return min + (max / min - 1) * ((double)rand() / RAND_MAX);
+    }
     void getRandomCell(CellAttrib* attr)
     {
-        float min = 20.0;
-        float max = 22000.0;
-        float randFreq = pow(2.0, (log2(min) + (log2(max) - log2(min)) * ((double)rand() / RAND_MAX)));
         float randAmp = (double)rand() / RAND_MAX; randAmp *= randAmp;
         
         unsigned int i = 0;
@@ -111,7 +113,7 @@ protected:
             attr[i++] = randAmp;
         
         if (i < getAttrCount())
-            attr[i++] = randFreq;
+            attr[i++] = getRandFreq(0.125, 2.0);
     }
     void getInitialCell(CellAttrib* attr)
     {
@@ -120,7 +122,7 @@ protected:
             attr[i++] = 0.0;
         
         if (i < getAttrCount())
-            attr[i++] = 440.0;
+            attr[i++] = getRandFreq(0.125, 2.0);//440.0;
     }
     void getTrueCell(CellAttrib* attr)
     {
@@ -129,7 +131,7 @@ protected:
             attr[i++] = 1.0;
         
         if (i < getAttrCount())
-            attr[i++] = 440.0;
+            attr[i++] = getRandFreq(0.125, 2.0);//440.0;
     }
     unsigned int encodeNeighborhood(CellAttrib* cells, unsigned int size)
     {
@@ -196,6 +198,7 @@ protected:
     UniformLink* _rulesBirthRadius;
     UniformLink* _rulesKeepCenter;
     UniformLink* _rulesKeepRadius;
+    UniformLink* _rulesStep;
     
     float _time;
     float _stepTime;
