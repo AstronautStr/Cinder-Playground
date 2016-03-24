@@ -346,7 +346,7 @@ void CinderPlaygroundApp::setup()
     _cycleN = 4;
     _cycleStep = 1.0 / (float)_cycleN;
     
-    _gridWidth = 64;
+    _gridWidth = 32;
     _gridHeight = _gridWidth;
     
     TwInit(TW_OPENGL_CORE, NULL);

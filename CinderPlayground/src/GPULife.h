@@ -99,21 +99,21 @@ protected:
     {
         return 4;
     }
-    static float getRandFreq(float min = 20, float max = 22000)
+    static float getRandFreq(float min = 0.125, float max = 16.0)
     {
-        //return pow(2.0, (log2(min) + (log2(max) - log2(min)) * ((double)rand() / RAND_MAX)));
-        return min + (max / min - 1) * ((double)rand() / RAND_MAX);
+        return pow(2.0, (log2(min) + (log2(max) - log2(min)) * ((double)rand() / RAND_MAX)));
     }
     void getRandomCell(CellAttrib* attr)
     {
-        float randAmp = (double)rand() / RAND_MAX; randAmp *= randAmp;
+        float randAmp = (double)rand() / RAND_MAX;
         
+        randAmp = (int)(randAmp + 0.5);
         unsigned int i = 0;
         if (i < getAttrCount())
             attr[i++] = randAmp;
         
         if (i < getAttrCount())
-            attr[i++] = getRandFreq(0.125, 2.0);
+            attr[i++] = getRandFreq();
     }
     void getInitialCell(CellAttrib* attr)
     {
@@ -122,7 +122,7 @@ protected:
             attr[i++] = 0.0;
         
         if (i < getAttrCount())
-            attr[i++] = getRandFreq(0.125, 2.0);//440.0;
+            attr[i++] = getRandFreq();
     }
     void getTrueCell(CellAttrib* attr)
     {
@@ -131,7 +131,7 @@ protected:
             attr[i++] = 1.0;
         
         if (i < getAttrCount())
-            attr[i++] = getRandFreq(0.125, 2.0);//440.0;
+            attr[i++] = getRandFreq();
     }
     unsigned int encodeNeighborhood(CellAttrib* cells, unsigned int size)
     {

@@ -41,9 +41,45 @@ bool checkNeumann(int i, int j)
     return !(((i == 0 && j == 0) || (i != 0 && j != 0)));
 }
 
+bool checkGex(int i, int j)
+{
+    return !(i == 0 && j == 0) && !((i == -1 || i == 1) && j == -1);
+}
+
 bool checkMoore(int i, int j)
 {
     return !(i == 0 && j == 0);
+}
+
+vec4 gameOfGexLife()
+{
+    float neighborsSum = 0;
+    float state = getCellState(inPosition);
+    
+    int ruleNCount = (2 * ruleRadius + 1); ruleNCount *= ruleNCount; ruleNCount -= 1;
+    
+    for (int i = -ruleRadius; i <= ruleRadius; ++i)
+    {
+        for (int j = -ruleRadius; j <= ruleRadius; ++j)
+        {
+            if (!checkGex(i, j))
+                continue;
+            
+            neighborsSum += getCellState(inPosition + ivec2(i, j));
+        }
+    }
+    
+    float delta = -1.0;
+    if (neighborsSum >= rulesBirthCenter - rulesBirthRadius && neighborsSum <= rulesBirthCenter + rulesBirthRadius)
+    {
+        delta = 1.0;
+    }
+    else if (neighborsSum >= rulesKeepCenter - rulesKeepRadius && neighborsSum <= rulesKeepCenter + rulesKeepRadius)
+    {
+        delta = 0.0;
+    }
+    float nextState = clamp(state + delta * 0.07, 0.0, 1.0);
+    return vec4(nextState, 0.0, 0.0, 1.0);
 }
 
 float gameOfLife()
@@ -387,7 +423,7 @@ vec4 sineRule()
     
     if (amp == 0.0)
     {
-        freq = randFreq(0.125, 2.0);
+        freq = randFreq(0.125, 16.0);
     }
     
     float sum = sin(2 * M_PI * time * freq);
@@ -418,8 +454,32 @@ vec4 sineRule()
     return vec4(amp, freq, 0.0, 0.0);
 }
 
+vec4 additiveSineSpace()
+{
+    vec4 state = getFullCellState(inPosition);
+    float amp = state.x;
+    float freq = state.y;
+    
+    float sum = sin(2 * M_PI * time * freq);
+    for (int i = -ruleRadius; i <= ruleRadius; ++i)
+    {
+        for (int j = -ruleRadius; j <= ruleRadius; ++j)
+        {
+            if (!checkMoore(i, j))
+                continue;
+            
+            vec4 broState = getFullCellState(inPosition + ivec2(i, j));
+            sum += sin(2 * M_PI * time * broState.y + sqrt(i * i + j * j) * M_PI);
+        }
+    }
+    
+    return vec4(sum, freq, 0.0, 0.0);
+}
+
 void main()
 {
+    //outCellState = gameOfGexLife();
+    //outCellState = additiveSineSpace();
     outCellState = sineRule();
     //outCellState = contValues();
     //outCellState = customRules();
