@@ -260,6 +260,7 @@ float randFreq()
 {
     float min = 20.0;
     float max = 22000.0;
+    //return 200.0 * (1.0 + int(rand(vec2(fract(time), 1.0)) * 20));
     return pow(2.0, (log2(min) + (log2(max) - log2(min)) * rand(vec2(fract(time), 1.0))));
 }
 
@@ -346,10 +347,13 @@ vec4 customRules()
 vec4 contValues()
 {
     float neighborsSum = 0;
-    float state = getCellState(inPosition);
+    vec4 state = getFullCellState(inPosition);
+    float amp = state.x;
+    float freq = state.y;
     
-    int ruleNCount = (2 * ruleRadius + 1); ruleNCount *= ruleNCount; ruleNCount -= 1;
-    
+
+    float[9] freqs;
+    int idx = 0;
     for (int i = -ruleRadius; i <= ruleRadius; ++i)
     {
         for (int j = -ruleRadius; j <= ruleRadius; ++j)
@@ -357,14 +361,24 @@ vec4 contValues()
             if (!checkMoore(i, j))
                 continue;
             
-            neighborsSum += getCellState(inPosition + ivec2(i, j));
+            vec4 broState = getFullCellState(inPosition + ivec2(i, j));
+            neighborsSum += broState.x;
+            
+            //if (broState.x > 0.0)
+            //{
+                freqs[idx] = broState.y;
+                idx++;
+            //}
         }
     }
-
+    if (amp == 0.0)
+    {
+        //freq = randFreq();
+        freq = freqs[int(rand(vec2(fract(time), 0.33))) * idx];
+    }
+    
     float delta = -1.0;
     float keepCenter = rulesKeepCenter;
-    // test
-    //keepCenter = rulesBirthCenter;
     if (neighborsSum >= rulesBirthCenter - rulesBirthRadius && neighborsSum <= rulesBirthCenter + rulesBirthRadius)
     {
         delta = 1.0;
@@ -373,8 +387,8 @@ vec4 contValues()
     {
         delta = 0.0;
     }
-    float nextState = clamp(state + delta * rulesDelta, 0.0, 1.0);
-    return vec4(nextState, 0.0, 0.0, 1.0);
+    amp = clamp(amp + delta * rulesDelta, 0.0, 1.0);
+    return vec4(amp, freq, 0.0, 1.0);
 }
 
 void main()
