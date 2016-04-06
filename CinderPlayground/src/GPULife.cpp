@@ -41,6 +41,49 @@ int cycledIndex(int index, int length)
 }
 
 
+CAGenNode::CAGenNode(RingBuffer* externalBuffer, CinderPlaygroundApp* CAController)
+{
+    _externalBuffer = externalBuffer;
+    _CAController = CAController;
+    _processedSamples = 0;
+}
+
+void CAGenNode::process(ci::audio::Buffer* buffer)
+{
+    float* data = (float*)buffer->getData();
+    size_t bufferSize = buffer->getSize();
+    
+    const int readSampleIndex = _externalBuffer->getReadPos();
+    
+   // int samplesSkipped = 0;
+    
+    for (int i = 0; i < bufferSize; ++i)
+    {
+        //if ((*_externalBuffer)[readSampleIndex + i] == 64.0)
+          //  samplesSkipped++;
+        
+        data[i] = (*_externalBuffer)[readSampleIndex + i];
+        
+        //(*_externalBuffer)[readSampleIndex + i] = 64.0;
+    }
+    _externalBuffer->incReadPos(bufferSize);
+    
+    //_CAController->reportSkippedFrames(samplesSkipped);
+    //std::cerr << "skip" << samplesSkipped << std::endl;
+    _processedSamples += bufferSize;
+    if (_processedSamples >= _externalBuffer->getPartSize())
+    {
+        //std::cerr << "processednext" << _processedSamples << std::endl;
+        _CAController->processStep();
+        _processedSamples = 0;
+    }
+}
+
+void CinderPlaygroundApp::reportSkippedFrames(int samplesSkipped)
+{
+    _samplesSkipped = samplesSkipped;
+}
+
 void CinderPlaygroundApp::_prepareDrawing()
 {
     _prepareDrawingProgram();
@@ -154,17 +197,23 @@ void CinderPlaygroundApp::_prepareFeedbackProgram()
     _showBar = false;
     TwDefine(" CAControl visible=false ");
     
-    _rulesBirthCenter = new UniformLink(_CAProgram, "rulesBirthCenter", 1.9);
+    _rulesBirthCenter = new UniformLink(_CAProgram, "rulesBirthCenter", 1.89);
     _rulesBirthRadius = new UniformLink(_CAProgram, "rulesBirthRadius", 0.35);
-    _rulesKeepCenter = new UniformLink(_CAProgram, "rulesKeepCenter", 1.9);
+    _rulesKeepCenter = new UniformLink(_CAProgram, "rulesKeepCenter", 1.89);
     _rulesKeepRadius = new UniformLink(_CAProgram, "rulesKeepRadius", 0.36);
-    _rulesStep = new UniformLink(_CAProgram, "rulesStep", 0.07);
+    _rulesDelta = new UniformLink(_CAProgram, "rulesDelta", 0.07);
+    /*
+    _rulesBirthCenter = new UniformLink(_CAProgram, "rulesBirthCenter", 1.9);
+    _rulesBirthRadius = new UniformLink(_CAProgram, "rulesBirthRadius", 0.33);
+    _rulesKeepCenter = new UniformLink(_CAProgram, "rulesKeepCenter", 1.9);
+    _rulesKeepRadius = new UniformLink(_CAProgram, "rulesKeepRadius", 0.39);
+    _rulesDelta = new UniformLink(_CAProgram, "rulesDelta", 0.021);*/
     
     TwAddVarCB(CAControl, "rulesBirthCenter", TW_TYPE_FLOAT, _setCallback, _getCallback, _rulesBirthCenter, "min=0.0 max=9.0 step=0.01");
     TwAddVarCB(CAControl, "rulesBirthRadius", TW_TYPE_FLOAT, _setCallback, _getCallback, _rulesBirthRadius, "min=0.0 max=9.0 step=0.01");
     TwAddVarCB(CAControl, "rulesKeepCenter", TW_TYPE_FLOAT, _setCallback, _getCallback, _rulesKeepCenter, "min=0.0 max=9.0 step=0.01");
     TwAddVarCB(CAControl, "rulesKeepRadius", TW_TYPE_FLOAT, _setCallback, _getCallback, _rulesKeepRadius, "min=0.0 max=9.0 step=0.01");
-    TwAddVarCB(CAControl, "rulesStep", TW_TYPE_FLOAT, _setCallback, _getCallback, _rulesStep, "min=0.0 max=1.0 step=0.001");
+    TwAddVarCB(CAControl, "rulesDelta", TW_TYPE_FLOAT, _setCallback, _getCallback, _rulesDelta, "min=0.0 max=1.0 step=0.001");
 }
 void TW_CALL CinderPlaygroundApp::_setCallback(const void* value, void* clientData)
 {
@@ -184,6 +233,7 @@ void CinderPlaygroundApp::_prepareFeedbackBuffers()
     _dataBytesSize = _dataLength * sizeof(CellAttrib);
     
     _dataResultBuffer = new GLfloat[_dataLength];
+    _snapshotBuffer = new GLfloat[_dataLength];
     
     int positionBytesSize = _vertexCount * 2 * sizeof(GLint);
     GLint* positionData = new GLint[positionBytesSize];
@@ -301,6 +351,116 @@ void CinderPlaygroundApp::_updateFeedback()
     glGetBufferSubData(GL_TRANSFORM_FEEDBACK_BUFFER, 0, _dataBytesSize, _dataResultBuffer);
 }
 
+int CinderPlaygroundApp::getSampleRate()
+{
+    return ci::audio::master()->getSampleRate();
+}
+
+void CinderPlaygroundApp::_prepareSoundFeedback()
+{
+    _prepareSoundFeedbackProgram();
+    _prepareSoundFeedbackBuffers();
+    _prepareSoundFeedbackVertexArray();
+}
+void CinderPlaygroundApp::_prepareSoundFeedbackProgram()
+{
+    std::string vertexShaderSrcString = readAllText(PlatformCocoa::get()->getResourcePath("soundShader.vert").string());
+    GLchar const* const vertexShaderSrc = vertexShaderSrcString.c_str();
+    _soundShader = glCreateShader(GL_VERTEX_SHADER);
+    glShaderSource(_soundShader, 1, &vertexShaderSrc, nullptr);
+    glCompileShader(_soundShader);
+    std::cerr << lastError(_soundShader) << std::endl;
+    _WTF
+    _soundProgram = glCreateProgram();
+    glAttachShader(_soundProgram, _soundShader);
+    
+    // data format
+    const GLchar* feedbackVaryings[] = { "sampleValue" };
+    glTransformFeedbackVaryings(_soundProgram, 1, feedbackVaryings, GL_INTERLEAVED_ATTRIBS);
+    
+    glLinkProgram(_soundProgram);
+    std::cerr << lastError(_soundProgram) << std::endl;
+    
+    GLint sampleRateLoc = glGetUniformLocation(_soundProgram, "sampleRate");
+    glProgramUniform1i(_soundProgram, sampleRateLoc, getSampleRate());
+    
+    GLint cellsCountLoc = glGetUniformLocation(_soundProgram, "cellsCount");
+    glProgramUniform1i(_soundProgram, cellsCountLoc, _vertexCount);
+    
+    _samplesElapsedUniformLoc = glGetUniformLocation(_soundProgram, "samplesElapsed");
+    _soundCellsSamplerLoc = glGetUniformLocation(_soundProgram, "cellsSampler");
+}
+void CinderPlaygroundApp::_prepareSoundFeedbackBuffers()
+{
+    _soundBytesSize = _samplesBufferLength * sizeof(GLfloat);
+    _ringBuffer = new RingBuffer(_samplesBufferLength, 3);
+    
+    int* posData = new int[_samplesBufferLength];
+    int posDataBytesSize = _samplesBufferLength * sizeof(GLint);
+    
+    for (int i = 0; i < _samplesBufferLength; ++i)
+    {
+        posData[i] = i;
+        (*_ringBuffer)[i] = 0.0f;
+    }
+    
+    glGenBuffers(1, &_soundFeedbackBuffer);
+    glBindBuffer(GL_ARRAY_BUFFER, _soundFeedbackBuffer);
+    glBufferData(GL_ARRAY_BUFFER, _soundBytesSize, _ringBuffer, GL_STATIC_DRAW);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    
+    glGenBuffers(1, &_soundVBOPos);
+    glBindBuffer(GL_ARRAY_BUFFER, _soundVBOPos);
+    glBufferData(GL_ARRAY_BUFFER, posDataBytesSize, posData, GL_STATIC_DRAW);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    
+
+}
+void CinderPlaygroundApp::_prepareSoundFeedbackVertexArray()
+{
+    glGenVertexArrays(1, &_soundVAO);
+    glBindVertexArray(_soundVAO);
+    
+    glBindBuffer(GL_ARRAY_BUFFER, _soundVBOPos);
+    GLint samplePositionAttr = glGetAttribLocation(_soundProgram, "samplePosition");
+    glVertexAttribIPointer(samplePositionAttr, 1, GL_INT, 0, NULL);
+    glEnableVertexAttribArray(samplePositionAttr);
+    
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
+}
+
+void CinderPlaygroundApp::_prepareNextBuffer()
+{
+    _samplesElapsed += _samplesBufferLength;
+    _ringBuffer->incWritePos(_samplesBufferLength);
+    glProgramUniform1i(_soundProgram, _samplesElapsedUniformLoc, _samplesElapsed);
+}
+void CinderPlaygroundApp::_generateSoundBuffer()
+{
+    glEnable(GL_RASTERIZER_DISCARD);
+    glUseProgram(_soundProgram);
+    
+    glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, 0, _soundFeedbackBuffer);
+    glBindVertexArray(_soundVAO);
+    
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_BUFFER, _TBOTex);
+    glUniform1i(_soundCellsSamplerLoc, 0);
+    
+    glBeginTransformFeedback(GL_POINTS);
+    glDrawArrays(GL_POINTS, 0, _samplesBufferLength);
+    glEndTransformFeedback();
+    
+    glDisable(GL_RASTERIZER_DISCARD);
+    
+    glFlush();
+    glUseProgram(0);
+    
+    // recieve processed data from feedback
+    glGetBufferSubData(GL_TRANSFORM_FEEDBACK_BUFFER, 0, _soundBytesSize, &_ringBuffer->_ringBuffer[_ringBuffer->getWritePos()]);
+}
+
 CinderPlaygroundApp::~CinderPlaygroundApp()
 {
     TwTerminate();
@@ -311,10 +471,16 @@ CinderPlaygroundApp::~CinderPlaygroundApp()
     delete _rulesKeepRadius;
     
     delete [] _dataResultBuffer;
+    delete [] _snapshotBuffer;
     delete [] _rulesData;
+    
+    delete _ringBuffer;
     
     glDeleteProgram(_CAProgram);
     glDeleteShader(_CAShader);
+    
+    glDeleteProgram(_soundProgram);
+    glDeleteShader(_soundShader);
     
     glDeleteProgram(_drawingProgram);
     glDeleteShader(_drawingFragmentShader);
@@ -325,12 +491,14 @@ CinderPlaygroundApp::~CinderPlaygroundApp()
     glDeleteBuffers(1, &_cellVBOPos);
     glDeleteBuffers(1, &_drawingVBO);
     glDeleteBuffers(1, &_rulesBuffer);
+    glDeleteBuffers(1, &_soundVBOPos);
     
     glDeleteTextures(1, &_TBOTex);
     glDeleteTextures(1, &_rulesTexture);
     
     glDeleteVertexArrays(1, &_cellVAO);
     glDeleteVertexArrays(1, &_drawingVAO);
+    glDeleteVertexArrays(1, &_soundVAO);
 }
 
 
@@ -338,7 +506,7 @@ CinderPlaygroundApp::~CinderPlaygroundApp()
 void CinderPlaygroundApp::setup()
 {
     _time = _gridTime = 0.0;
-    _stepTime = 0.01;
+    _stepTime = 0.0;
     _pause = false;
     
     _lambda = 0.25;
@@ -355,6 +523,25 @@ void CinderPlaygroundApp::setup()
     _prepareFeedback();
     _prepareDrawing();
     
+    auto ctx = ci::audio::master();
+    _samplesBufferLength = ctx->getOutput()->getOutputFramesPerBlock() * 16;
+    
+    _prepareSoundFeedback();
+    _processStep();
+    _processStep();
+    _isScheduledStep = false;
+    
+    _CAGenNode = ctx->makeNode(new CAGenNode(_ringBuffer, this));
+    _samplesSkipped = 0;
+    ci::audio::GainNodeRef gainNode = ctx->makeNode(new ci::audio::GainNode);
+    
+    _CAGenNode >> gainNode >> ctx->getOutput();
+    
+    _CAGenNode->enable();
+    gainNode->setValue(1.0);
+    gainNode->enable();
+    ctx->getOutput()->enable();
+    
     Rectf window = Rectf(vec2(0, 0), vec2(_gridWidth, _gridHeight));
     Rectf display = Rectf(vec2(0, 0), getDisplay()->getSize());
     float xRatio = display.getWidth() / window.getWidth();
@@ -368,7 +555,7 @@ void CinderPlaygroundApp::setup()
     setWindowPos(x, y);
     setWindowSize(width, height);
     
-    bool stealth = true;
+    bool stealth = false;
     if (stealth)
     {
         int stealthPos = _gridWidth;
@@ -406,6 +593,21 @@ void CinderPlaygroundApp::_randomField()
     }
 }
 
+void CinderPlaygroundApp::_loadSnapshot()
+{
+    for (int i = 0; i < _vertexCount; ++i)
+    {
+        _dataResultBuffer[i * getAttrCount()] = _snapshotBuffer[i * getAttrCount()];
+    }
+}
+
+void CinderPlaygroundApp::_saveSnapshot()
+{
+    for (int i = 0; i < _vertexCount; ++i)
+    {
+        _snapshotBuffer[i * getAttrCount()] = _dataResultBuffer[i * getAttrCount()];
+    }
+}
 
 void CinderPlaygroundApp::_updateRulesBuffer()
 {
@@ -478,11 +680,13 @@ void CinderPlaygroundApp::keyDown( KeyEvent event )
             break;
             
         case KeyEvent::KEY_s:
-            _logRules();
+            //_logRules();
+            _saveSnapshot();
             break;
             
         case KeyEvent::KEY_l:
-            _loadRule(0);
+            //_loadRule(0);
+            _loadSnapshot();
             break;
             
         case KeyEvent::KEY_b:
@@ -549,6 +753,23 @@ void CinderPlaygroundApp::mouseDown( MouseEvent event )
         return;
 }
 
+void CinderPlaygroundApp::processStep()
+{
+    //_processStep();
+    _isScheduledStep = true;
+}
+
+void CinderPlaygroundApp::_processStep()
+{
+    _updateFeedback();
+    
+    _generateSoundBuffer();
+    
+    _prepareNextBuffer();
+    //std::cerr << toString(_ringBuffer->getReadPos()) << " " << toString(_ringBuffer->getWritePos()) << std::endl;
+    _isScheduledStep = false;
+}
+
 void CinderPlaygroundApp::update()
 {
     TwWindowSize(getWindowWidth(), getWindowHeight());
@@ -557,16 +778,11 @@ void CinderPlaygroundApp::update()
     float dt = newTime - _time;
     _time = newTime;
     
-    bool enableGridUpdate = true;
     _prepareNextUpdate();
-    if (!_pause)
+    //_processStep();
+    if (_isScheduledStep)
     {
-        _gridTime += dt;
-        if (_gridTime >= _stepTime)
-        {
-            _updateFeedback();
-            _gridTime -= _stepTime;
-        }
+        _processStep();
     }
 }
 
@@ -590,15 +806,16 @@ void CinderPlaygroundApp::draw()
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
     glUseProgram(0);
-
-    //gl::drawString("FPS " + toString(getAverageFps()), vec2( 10.0f, 10.0f ), Color::white(), mFont );
     
-    vec2 cellRectSize = vec2((float)getWindowWidth() / _gridWidth, (float)getWindowHeight() / _gridHeight);
-    ivec2 mouseCell = (ivec2)(_mousePos / cellRectSize);
-    vec2 mouseCellPoint = (vec2)mouseCell * cellRectSize;
+    //gl::drawString("SS " + toString(_ringBuffer->getReadPos()/*_samplesSkipped*/), vec2( 10.0f, 10.0f ), Color::white(), mFont );
+    //gl::drawString("FPS " + toString(_ringBuffer->getWritePos()/*getAverageFps()*/), vec2( 10.0f, 20.0f ), Color::white(), mFont );
+    
+    //vec2 cellRectSize = vec2((float)getWindowWidth() / _gridWidth, (float)getWindowHeight() / _gridHeight);
+    //ivec2 mouseCell = (ivec2)(_mousePos / cellRectSize);
+    //vec2 mouseCellPoint = (vec2)mouseCell * cellRectSize;
 
-    gl::color(1.0, 0.0, 0.0);
-    gl::drawSolidRect(Rectf(mouseCellPoint, mouseCellPoint + cellRectSize));
+    //gl::color(1.0, 0.0, 0.0);
+    //gl::drawSolidRect(Rectf(mouseCellPoint, mouseCellPoint + cellRectSize));
     
     TwDraw();
 }

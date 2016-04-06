@@ -20,6 +20,7 @@
 		7066DB962F424DD094B257A2 /* CinderApp.icns in Resources */ = {isa = PBXBuildFile; fileRef = E4981A5CC04847538D4EA5EE /* CinderApp.icns */; };
 		8D11072F0486CEB800E47090 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */; };
 		CF4FF6EB1C6E14D200CE7E15 /* GPULife.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CF4FF6E91C6E14D200CE7E15 /* GPULife.cpp */; };
+		CF9197091CA6E03F00F299C7 /* soundShader.vert in Resources */ = {isa = PBXBuildFile; fileRef = CF9197081CA6E03F00F299C7 /* soundShader.vert */; };
 		CFE32D071C886DD4002C790A /* AntTweakBar.lib in Frameworks */ = {isa = PBXBuildFile; fileRef = CFE32D051C886DD4002C790A /* AntTweakBar.lib */; };
 		CFF7A7CF1C19F05900529C6A /* generator.frag in Resources */ = {isa = PBXBuildFile; fileRef = CFF7A7CD1C19F05900529C6A /* generator.frag */; };
 		CFF7A7D01C19F05900529C6A /* plain.vert in Resources */ = {isa = PBXBuildFile; fileRef = CFF7A7CE1C19F05900529C6A /* plain.vert */; };
@@ -57,6 +58,7 @@
 		8D1107320486CEB800E47090 /* CinderPlayground.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CinderPlayground.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		CF4FF6E91C6E14D200CE7E15 /* GPULife.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = GPULife.cpp; path = ../src/GPULife.cpp; sourceTree = "<group>"; };
 		CF4FF6EA1C6E14D200CE7E15 /* GPULife.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = GPULife.h; path = ../src/GPULife.h; sourceTree = "<group>"; };
+		CF9197081CA6E03F00F299C7 /* soundShader.vert */ = {isa = PBXFileReference; explicitFileType = sourcecode.glsl; fileEncoding = 4; path = soundShader.vert; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.glsl; };
 		CFE32D041C886DD4002C790A /* AntTweakBar.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AntTweakBar.h; path = ../AntTweakBar/AntTweakBar.h; sourceTree = "<group>"; };
 		CFE32D051C886DD4002C790A /* AntTweakBar.lib */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = AntTweakBar.lib; path = ../AntTweakBar/AntTweakBar.lib; sourceTree = "<group>"; };
 		CFF7A7CD1C19F05900529C6A /* generator.frag */ = {isa = PBXFileReference; explicitFileType = sourcecode.glsl; fileEncoding = 4; path = generator.frag; sourceTree = "<group>"; };
@@ -102,8 +104,8 @@
 			isa = PBXGroup;
 			children = (
 				CFE32D021C886DBB002C790A /* AntTweakBar */,
-				CF4FF6E91C6E14D200CE7E15 /* GPULife.cpp */,
 				CF4FF6EA1C6E14D200CE7E15 /* GPULife.h */,
+				CF4FF6E91C6E14D200CE7E15 /* GPULife.cpp */,
 				CFF7A7CC1C19F05900529C6A /* shaders */,
 			);
 			name = Source;
@@ -200,6 +202,7 @@
 				CFFEA5241C638D130074069C /* cellular.vert */,
 				CFF7A7CD1C19F05900529C6A /* generator.frag */,
 				CFF7A7CE1C19F05900529C6A /* plain.vert */,
+				CF9197081CA6E03F00F299C7 /* soundShader.vert */,
 			);
 			name = shaders;
 			path = ../shaders;
@@ -263,6 +266,7 @@
 				7066DB962F424DD094B257A2 /* CinderApp.icns in Resources */,
 				CFF7A7CF1C19F05900529C6A /* generator.frag in Resources */,
 				CFFEA5251C638D130074069C /* cellular.frag in Resources */,
+				CF9197091CA6E03F00F299C7 /* soundShader.vert in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

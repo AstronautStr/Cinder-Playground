@@ -19,17 +19,16 @@ vec3 hsv2rgb(vec3 c)
 
 void main()
 {
-    ivec2 cellSize = ivec2(screenSize / gridSize);
-    ivec2 cellCoord = ivec2(gl_FragCoord.xy / cellSize);
-    cellCoord = ivec2((gl_FragCoord.xy + ivec2(0, (cellCoord.x % 2) * cellSize.y / 2)) / cellSize);
-    
+    ivec2 cellCoord = ivec2(gl_FragCoord.xy / screenSize * gridSize);
     vec4 cell = texelFetch(gridSampler, int(cellCoord.x * gridSize.x) + cellCoord.y);
     
-    float freq = log2(cell.y) / (log2(16.0) - log2(0.125));//(22000.0 - 20.0);
+    float freq = log2(cell.y) / (log2(22000.0) - log2(20.0));
     float amp = cell.x;
     
-    color = vec4(1.0, 1.0, 1.0, amp);
+    //color = vec4(1.0, 1.0, 1.0, /*mod(gl_FragCoord.x, screenSize.x / gridSize.x) <= 1.0 ? 0.1 : mod(gl_FragCoord.y, screenSize.y / gridSize.y) <= 1.0 ? 0.1 : sqrt(*/amp);
     
-    //vec3 hsv = hsv2rgb(vec3(freq, 1.0, 1.0));
-    //color = vec4(hsv, amp);
+    //color = vec4(cell.x, cell.y, cell.z, cell.w) / 9.0;
+    
+    vec3 hsv = hsv2rgb(vec3(freq, 1.0, 1.0));
+    color = vec4(hsv, amp);
 }
